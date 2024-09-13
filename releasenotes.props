@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <PackageReleaseNotes Condition="'$(PackageVersion)' == '0.0.1-alpha'">
+      <![CDATA[
+
+Features
+- Add support for overriding `ReadEmbeddedResourceValue` partial method
+
+]]>
+    </PackageReleaseNotes>
+     <PackageReleaseNotes>$(PackageReleaseNotes)
+See $(PackageProjectUrl)/blob/main/CHANGELOG.md#v$(PackageVersion.Replace('.','')) for more details.</PackageReleaseNotes>
+  </PropertyGroup>
+</Project>
