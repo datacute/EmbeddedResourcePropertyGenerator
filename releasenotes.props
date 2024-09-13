@@ -1,5 +1,13 @@
 <Project>
   <PropertyGroup>
+    <PackageReleaseNotes Condition="'$(PackageVersion)' == '0.0.1-alpha02'">
+      <![CDATA[
+
+Features
+- Add `[Conditional]` attribute to restrict output of the `EmbeddedResourcePropertiesAttribute`
+
+]]>
+    </PackageReleaseNotes>
     <PackageReleaseNotes Condition="'$(PackageVersion)' == '0.0.1-alpha'">
       <![CDATA[
 
