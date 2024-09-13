@@ -1,7 +1,7 @@
 Changelog
 --- 
 
-## v0.0.1-alpha2 (2024-09-13)
+## v0.0.1-alpha.2 (2024-09-13)
 
 ### Features
 
