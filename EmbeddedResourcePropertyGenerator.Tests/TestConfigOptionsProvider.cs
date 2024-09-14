@@ -24,10 +24,10 @@ public class TestConfigOptions : AnalyzerConfigOptions
                 return true;
             case "build_property.ProjectDir":
                 value =
-                    @"E:\EmbeddedResourcePropertyGenerator.Tests\";
+                    $@"{TestHelper.TestPath}\";
                 return true;
             case "build_property.RootNamespace":
-                value = "EmbeddedResourcePropertyGenerator.Tests";
+                value = TestHelper.TestNamespace;
                 return true;
             default:
                 value = null;

@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Immutable;
 using System.Reflection;
-using Datacute.EmbeddedResourcePropertyGenerator;
 using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -10,14 +9,13 @@ namespace EmbeddedResourcePropertyGenerator.Tests;
 
 public static class TestHelper
 {
-    public static (ImmutableArray<Diagnostic> Diagnostics, string Output) GetGeneratedOutput<T>(List<AdditionalText>? additionalTexts, params string[] source)
-        where T : IIncrementalGenerator, new()
-    {
-        var (diagnostics, trees) = GetGeneratedTrees<T, TrackingNames>(additionalTexts, source);
-        return (diagnostics, trees.LastOrDefault() ?? string.Empty);
-    }
-
-    public static (ImmutableArray<Diagnostic> Diagnostics, string[] Output) GetGeneratedTrees<TGenerator, TTrackingNames>(List<AdditionalText>? additionalTexts, params string[] sources)
+    public const string TestNamespace = "EmbeddedResourcePropertyGenerator.Tests";
+    public const string TestPath = @"E:\EmbeddedResourcePropertyGenerator.Tests\Tests";
+    
+    public static (ImmutableArray<Diagnostic> Diagnostics, string[] Output) GetGeneratedOutput<TAttribute, TGenerator, TTrackingNames>(
+        List<AdditionalText>? additionalTexts, 
+        params string[] sources)
+        where TAttribute : Attribute
         where TGenerator : IIncrementalGenerator, new()
     {
         // get all the const string fields
@@ -28,23 +26,23 @@ public static class TestHelper
             .Where(x => !string.IsNullOrEmpty(x))
             .ToArray();
 
-        return GetGeneratedTrees<TGenerator>(additionalTexts, sources, trackingNames);
+        var compilation = GetCompilation<TAttribute, TGenerator>(sources);
+
+        // Run the generator, get the results, and assert cacheability if applicable
+        GeneratorDriverRunResult runResult = RunGeneratorAndAssertOutput<TGenerator>(
+            additionalTexts, compilation, trackingNames);
+
+        // Return the generator diagnostics and generated sources
+        return (runResult.Diagnostics, runResult.GeneratedTrees.Select(x => x.ToString()).ToArray());
     }
 
-        
-    // You call this method passing in C# sources, and the list of stages you expect
-    // It runs the generator, asserts the outputs are ok, 
-    public static (ImmutableArray<Diagnostic> Diagnostics, string[] Output) GetGeneratedTrees<T>(
-        List<AdditionalText>? additionalTexts,
-        string[] sources, // C# source code 
-        string[] stages,  // The tracking stages we expect
-        bool assertOutputs = true) // You can disable cacheability checking during dev
-        where T : IIncrementalGenerator, new() // T is your generator
+    private static CSharpCompilation GetCompilation<TAttribute, TGenerator>(params string[] sources)
+        where TAttribute : Attribute
+        where TGenerator : IIncrementalGenerator, new()
     {
         // Convert the source files to SyntaxTrees
-        IEnumerable<SyntaxTree> syntaxTrees = sources.Select(static (x, i) => 
-            CSharpSyntaxTree.ParseText(x)
-                .WithFilePath(@$"E:\EmbeddedResourcePropertyGenerator.Tests\Test{i}.cs")
+        var syntaxTrees = sources.Select(static (s, i) => 
+            CSharpSyntaxTree.ParseText(s).WithFilePath(@$"{TestPath}\Test{i}.cs")
         );
 
         // Configure the assembly references you need
@@ -52,73 +50,71 @@ public static class TestHelper
         var references = AppDomain.CurrentDomain.GetAssemblies()
             .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
             .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
-            .Concat(new[] { MetadataReference.CreateFromFile(typeof(T).Assembly.Location) });
+            .Concat(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(TGenerator).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(TAttribute).Assembly.Location)
+            });
 
         // Create a Compilation object
         // You may want to specify other results here
-        CSharpCompilation compilation = CSharpCompilation.Create(
-            "Tests",
-            syntaxTrees,
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        // Run the generator, get the results, and assert cacheability if applicable
-        GeneratorDriverRunResult runResult = RunGeneratorAndAssertOutput<T>(
-            additionalTexts, compilation, stages, assertOutputs);
-
-        // Return the generator diagnostics and generated sources
-        return (runResult.Diagnostics, runResult.GeneratedTrees.Select(x => x.ToString()).ToArray());
+        return CSharpCompilation.Create("Tests", syntaxTrees, references);
     }
-    
-    private static GeneratorDriverRunResult RunGeneratorAndAssertOutput<T>(
+
+    private static GeneratorDriverRunResult RunGeneratorAndAssertOutput<TGenerator>(
         List<AdditionalText>? additionalTexts,
         CSharpCompilation compilation, 
         string[] trackingNames, 
         bool assertOutput = true)
-        where T : IIncrementalGenerator, new()
+        where TGenerator : IIncrementalGenerator, new()
     {
-        ISourceGenerator generator = new T().AsSourceGenerator();
+        var driver = GetDriver<TGenerator>(additionalTexts);
 
-        var opts = new GeneratorDriverOptions(
-            disabledOutputs: IncrementalGeneratorOutputKind.None,
-            trackIncrementalGeneratorSteps: true);
-
-        GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: opts);
-
-        if (additionalTexts != null)
-        {
-            driver = driver.AddAdditionalTexts(additionalTexts.ToImmutableArray());
-        }
-        var newOptions = new TestConfigOptionsProvider();
-        driver = driver.WithUpdatedAnalyzerConfigOptions(newOptions);
-        
         var clone = compilation.Clone();
+
         // Run twice, once with a clone of the compilation
         // Note that we store the returned drive value, as it contains cached previous outputs
         driver = driver.RunGenerators(compilation);
-        GeneratorDriverRunResult runResult = driver.GetRunResult();
+        var runResult = driver.GetRunResult();
 
-        if (assertOutput)
-        {
-            // Run with a clone of the compilation
-            GeneratorDriverRunResult runResult2 = driver
-                .RunGenerators(clone)
-                .GetRunResult();
+        if (!assertOutput) return runResult;
 
-            AssertRunsEqual(runResult, runResult2, trackingNames);
+        // Run with a clone of the compilation
+        var runResult2 = driver
+            .RunGenerators(clone)
+            .GetRunResult();
+
+        AssertRunsEqual(runResult, runResult2, trackingNames);
             
-            // verify the second run only generated cached source outputs
-            runResult2.Results[0]
-                .TrackedOutputSteps
-                .SelectMany(x => x.Value) // step executions
-                .SelectMany(x => x.Outputs) // execution results
-                .Should()
-                .OnlyContain(x => x.Reason == IncrementalStepRunReason.Cached);
-        }
+        // verify the second run only generated cached source outputs
+        runResult2.Results[0]
+            .TrackedOutputSteps
+            .SelectMany(x => x.Value) // step executions
+            .SelectMany(x => x.Outputs) // execution results
+            .Should()
+            .OnlyContain(x => x.Reason == IncrementalStepRunReason.Cached);
 
         return runResult;
     }
-    
+
+    private static GeneratorDriver GetDriver<TGenerator>(List<AdditionalText>? additionalTexts)
+        where TGenerator : IIncrementalGenerator, new()
+    {
+        var generator = new TGenerator().AsSourceGenerator();
+
+        var testConfigOptionsProvider = new TestConfigOptionsProvider();
+
+        var generatorDriverOptions = new GeneratorDriverOptions(
+            disabledOutputs: IncrementalGeneratorOutputKind.None,
+            trackIncrementalGeneratorSteps: true);
+
+        return CSharpGeneratorDriver.Create(
+            [generator], 
+            additionalTexts, 
+            optionsProvider: testConfigOptionsProvider,
+            driverOptions: generatorDriverOptions);
+    }
+
     private static void AssertRunsEqual(GeneratorDriverRunResult runResult1, GeneratorDriverRunResult runResult2, string[] trackingNames)
     {
         // We're given all the tracking names, but not all the stages have necessarily executed so filter
@@ -138,16 +134,13 @@ public static class TestHelper
             var runSteps2 = trackedSteps2[trackingName];
             AssertEqual(runSteps1, runSteps2, trackingName);
         }
-
-        return;
-
-        static Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> GetTrackedSteps(
-            GeneratorDriverRunResult runResult, string[] trackingNames) =>
-            runResult.Results[0]
-                .TrackedSteps
-                .Where(step => trackingNames.Contains(step.Key))
-                .ToDictionary(x => x.Key, x => x.Value);
     }
+
+    private static Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> GetTrackedSteps(GeneratorDriverRunResult runResult, string[] trackingNames) =>
+        runResult.Results[0]
+            .TrackedSteps
+            .Where(step => trackingNames.Contains(step.Key))
+            .ToDictionary(x => x.Key, x => x.Value);
 
     private static void AssertEqual(
         ImmutableArray<IncrementalGeneratorRunStep> runSteps1,
@@ -169,8 +162,8 @@ public static class TestHelper
                 .Equal(outputs2, $"because {stepName} should produce cacheable outputs");
 
             // Therefore, on the second run the results should always be cached or unchanged!
-            // - Unchanged is when the _input_ has changed, but the output hasn't
-            // - Cached is when the the input has not changed, so the cached output is used 
+            // - Unchanged is when the input has changed, but the output hasn't
+            // - Cached is when the input has not changed, so the cached output is used 
             runStep2.Outputs.Should()
                 .OnlyContain(
                     x => x.Reason == IncrementalStepRunReason.Cached || x.Reason == IncrementalStepRunReason.Unchanged,
@@ -229,46 +222,14 @@ public static class TestHelper
         }
     }
 
-    public static Task Verify(string source, List<AdditionalText>? additionalTexts = null)
+    public static Task Verify<TAttribute, TGenerator>(string source, List<AdditionalText>? additionalTexts = null)
+        where TAttribute : Attribute
+        where TGenerator : IIncrementalGenerator, new()
     {
-        // Create references for assemblies we require
-        // We could add multiple references if required
-        IEnumerable<PortableExecutableReference> references = new[]
-        {
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
-        };
-        
-        // Parse the provided string into a C# syntax tree
-        SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source)
-            .WithFilePath(@"E:\EmbeddedResourcePropertyGenerator.Tests\Test.cs");
-
-        // Create a Roslyn compilation for the syntax tree.
-        CSharpCompilation compilation = CSharpCompilation.Create(
-            assemblyName: "Tests")
-            .WithReferences(references)
-            .AddSyntaxTrees(syntaxTree);
-
-
-        // Create an instance of our Embedded Resource Property incremental source generator
-        var generator = new Generator();
-        
-        
-
-        // The GeneratorDriver is used to run our generator against a compilation
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-
-        if (additionalTexts != null)
-        {
-            driver = driver.AddAdditionalTexts(additionalTexts.ToImmutableArray());
-        }
-
-        var newOptions = new TestConfigOptionsProvider();
-        driver = driver.WithUpdatedAnalyzerConfigOptions(newOptions);
-
-        // Run the source generator!
+        var driver = GetDriver<TGenerator>(additionalTexts);
+        var compilation = GetCompilation<TAttribute, TGenerator>(source);
         driver = driver.RunGenerators(compilation);
 
-        // Use verify to snapshot test the source generator output!
         return Verifier.Verify(driver);
     }
 }
