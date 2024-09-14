@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmbeddedResourceProperty", "EmbeddedResourceProperty\EmbeddedResourceProperty.csproj", "{0CA5D352-B689-44D2-A8C2-61FD522FE84D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmbeddedResourcePropertyExample", "EmbeddedResourcePropertyExample\EmbeddedResourcePropertyExample.csproj", "{0CA5D352-B689-44D2-A8C2-61FD522FE84D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmbeddedResourcePropertyGenerator", "EmbeddedResourcePropertyGenerator\EmbeddedResourcePropertyGenerator.csproj", "{E236FDDB-F896-4BFD-AD97-54E6600902E1}"
 EndProject
@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 		releasenotes.props = releasenotes.props
 		version.props = version.props
+		LICENSE = LICENSE
+		README.md = README.md
 	EndProjectSection
 EndProject
 Global

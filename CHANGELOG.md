@@ -1,6 +1,16 @@
 Changelog
 --- 
 
+## v0.0.1-alpha.3 (2024-09-13)
+
+### Features
+
+* Included `EmbeddedResourcePropertyExample` project in github repository
+
+### Fixes
+
+* Removing doc duplication
+
 ## v0.0.1-alpha.2 (2024-09-13)
 
 ### Features

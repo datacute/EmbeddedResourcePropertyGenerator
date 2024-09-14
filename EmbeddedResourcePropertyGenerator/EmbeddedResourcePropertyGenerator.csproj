@@ -22,9 +22,9 @@
         <PackageId>Datacute.EmbeddedResourcePropertyGenerator</PackageId>
         <Title>Datacute Embedded Resource Property Generator</Title>
         <Company>Datacute</Company>
-        <Description>This project generates properties for embedded resources in a project.</Description>
+        <Description>A source generator creating properties for embedded resources in a project.</Description>
         <PackageTags>SourceGenerator</PackageTags>
-        <PackageReadmeFile>readme.md</PackageReadmeFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/datacute/EmbeddedResourcePropertyGenerator</PackageProjectUrl>
@@ -41,6 +41,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="docs\readme.md" Pack="true" PackagePath="\" />
+        <None Include="../README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 </Project>
