@@ -36,7 +36,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         private static void GenerateInitialCode(IncrementalGeneratorPostInitializationContext context)
         {
             context.CancellationToken.ThrowIfCancellationRequested();
-            context.AddSource($"_{Templates.AttributeName}.g.cs", Templates.AttributeCs);
             context.AddSource("_EmbeddedResourceReader.g.cs", Templates.EmbeddedResourceReaderCs);
         }
 

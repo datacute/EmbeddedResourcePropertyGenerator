@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\EmbeddedResourcePropertyGenerator.Attributes\EmbeddedResourcePropertyGenerator.Attributes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
     <ProjectReference Include="..\EmbeddedResourcePropertyGenerator\EmbeddedResourcePropertyGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 

@@ -1,7 +1,13 @@
 Changelog
 --- 
 
-## v0.0.1-alpha.3 (2024-09-13)
+## v0.0.1-alpha.4 (2024-09-14)
+
+### Features
+
+* Moved the attribute to its own dll
+
+## v0.0.1-alpha.3 (2024-09-14)
 
 ### Features
 
@@ -15,7 +21,8 @@ Changelog
 
 ### Features
 
-* Add `[Conditional]` attribute to restrict output of the `EmbeddedResourcePropertiesAttribute`
+* Add `[Conditional]` attribute to restrict inclusion of the usage of 
+  the `EmbeddedResourcePropertiesAttribute` in the output.
 
 ## v0.0.1-alpha (2024-09-09)
 
