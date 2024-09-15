@@ -1,5 +1,16 @@
 <Project>
   <PropertyGroup>
+    <PackageReleaseNotes Condition="'$(PackageVersion)' == '0.0.1-alpha.4'">
+      <![CDATA[
+
+Features
+
+- Moved the attribute to its own dll
+- Include Read method in each class
+- The Read method, backing fields, and resource names are available to the class 
+
+]]>
+    </PackageReleaseNotes>
     <PackageReleaseNotes Condition="'$(PackageVersion)' == '0.0.1-alpha.3'">
       <![CDATA[
 

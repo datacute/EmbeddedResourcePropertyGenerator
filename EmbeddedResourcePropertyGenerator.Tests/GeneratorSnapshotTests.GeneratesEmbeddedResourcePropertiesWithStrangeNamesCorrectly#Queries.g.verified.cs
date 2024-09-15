@@ -7,41 +7,6 @@
 
 #nullable enable
 
-file static class ReadingMethods
-{
-    public static string ReadEmbeddedResource(string resourceName)
-    {
-        return global::Datacute.EmbeddedResourcePropertyGenerator.EmbeddedResourceReader.Read(typeof(Queries), resourceName);
-    }
-}
-file static class BackingFields
-{
-    public static string? _1example_open_1_close_;
-    public static string? _1example_lt_1_gt_;
-    public static string? Test;
-    public static string? Test_;
-    public static string? Queries_dot_txt;
-    public static string? Queries_txt;
-    public static string? _dot_txt;
-    public static string? _txt;
-    public static string? _u1F602_;
-    public static string? _1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_;
-    public static string? _amp_amp_semi_;
-}
-file static class ResourceNames
-{
-    public const string _1example_open_1_close_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.1example(1).txt";
-    public const string _1example_lt_1_gt_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.1example<1>.txt";
-    public const string Test = "EmbeddedResourcePropertyGenerator.Tests.Queries.test.txt";
-    public const string Test_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.Test.txt";
-    public const string Queries_dot_txt = "EmbeddedResourcePropertyGenerator.Tests.Queries.Queries.txt";
-    public const string Queries_txt = "EmbeddedResourcePropertyGenerator.Tests.Queries.Queries_txt.txt";
-    public const string _dot_txt = "EmbeddedResourcePropertyGenerator.Tests.Queries..txt";
-    public const string _txt = "EmbeddedResourcePropertyGenerator.Tests.Queries._txt.txt";
-    public const string _u1F602_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.😂.txt";
-    public const string _1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.1(@#$)[.,] <:'|>.txt";
-    public const string _amp_amp_semi_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.&amp;.txt";
-}
 /// <summary>
 /// This class's properties are generated from project files meeting the criteria:
 /// <list type="bullet">
@@ -58,6 +23,45 @@ file static class ResourceNames
 /// </summary>
 public static partial class Queries
 {
+    private static class EmbeddedResource
+    {
+        public static string Read(string resourceName)
+        {
+            var assembly = typeof(Queries).Assembly;
+            using var stream = assembly.GetManifestResourceStream(resourceName)!;
+            using var streamReader = new global::System.IO.StreamReader(stream, global::System.Text.Encoding.UTF8);
+            var resourceText = streamReader.ReadToEnd();
+            return resourceText;
+        }
+        public static class BackingField
+        {
+            public static string? _1example_open_1_close_;
+            public static string? _1example_lt_1_gt_;
+            public static string? Test;
+            public static string? Test_;
+            public static string? Queries_dot_txt;
+            public static string? Queries_txt;
+            public static string? _dot_txt;
+            public static string? _txt;
+            public static string? _u1F602_;
+            public static string? _1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_;
+            public static string? _amp_amp_semi_;
+        }
+        public static class ResourceName
+        {
+            public const string _1example_open_1_close_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.1example(1).txt";
+            public const string _1example_lt_1_gt_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.1example<1>.txt";
+            public const string Test = "EmbeddedResourcePropertyGenerator.Tests.Queries.test.txt";
+            public const string Test_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.Test.txt";
+            public const string Queries_dot_txt = "EmbeddedResourcePropertyGenerator.Tests.Queries.Queries.txt";
+            public const string Queries_txt = "EmbeddedResourcePropertyGenerator.Tests.Queries.Queries_txt.txt";
+            public const string _dot_txt = "EmbeddedResourcePropertyGenerator.Tests.Queries..txt";
+            public const string _txt = "EmbeddedResourcePropertyGenerator.Tests.Queries._txt.txt";
+            public const string _u1F602_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.😂.txt";
+            public const string _1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.1(@#$)[.,] <:'|>.txt";
+            public const string _amp_amp_semi_ = "EmbeddedResourcePropertyGenerator.Tests.Queries.&amp;.txt";
+        }
+    }
     static partial void ReadEmbeddedResourceValue(ref string? backingField, string resourceName, string propertyName);
     static partial void AlterEmbeddedResourceReturnValue(ref string value, string resourceName, string propertyName);
 
@@ -74,9 +78,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields._1example_open_1_close_, ResourceNames._1example_open_1_close_, "_1example_open_1_close_");
-            var value = BackingFields._1example_open_1_close_ ??= ReadingMethods.ReadEmbeddedResource(ResourceNames._1example_open_1_close_);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames._1example_open_1_close_, "_1example_open_1_close_");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField._1example_open_1_close_, EmbeddedResource.ResourceName._1example_open_1_close_, "_1example_open_1_close_");
+            var value = EmbeddedResource.BackingField._1example_open_1_close_ ??= EmbeddedResource.Read(EmbeddedResource.ResourceName._1example_open_1_close_);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName._1example_open_1_close_, "_1example_open_1_close_");
             return value;
         }
     }
@@ -94,9 +98,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields._1example_lt_1_gt_, ResourceNames._1example_lt_1_gt_, "_1example_lt_1_gt_");
-            var value = BackingFields._1example_lt_1_gt_ ??= ReadingMethods.ReadEmbeddedResource(ResourceNames._1example_lt_1_gt_);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames._1example_lt_1_gt_, "_1example_lt_1_gt_");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField._1example_lt_1_gt_, EmbeddedResource.ResourceName._1example_lt_1_gt_, "_1example_lt_1_gt_");
+            var value = EmbeddedResource.BackingField._1example_lt_1_gt_ ??= EmbeddedResource.Read(EmbeddedResource.ResourceName._1example_lt_1_gt_);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName._1example_lt_1_gt_, "_1example_lt_1_gt_");
             return value;
         }
     }
@@ -114,9 +118,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields.Test, ResourceNames.Test, "Test");
-            var value = BackingFields.Test ??= ReadingMethods.ReadEmbeddedResource(ResourceNames.Test);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames.Test, "Test");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.Test, EmbeddedResource.ResourceName.Test, "Test");
+            var value = EmbeddedResource.BackingField.Test ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Test);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.Test, "Test");
             return value;
         }
     }
@@ -134,9 +138,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields.Test_, ResourceNames.Test_, "Test_");
-            var value = BackingFields.Test_ ??= ReadingMethods.ReadEmbeddedResource(ResourceNames.Test_);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames.Test_, "Test_");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.Test_, EmbeddedResource.ResourceName.Test_, "Test_");
+            var value = EmbeddedResource.BackingField.Test_ ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Test_);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.Test_, "Test_");
             return value;
         }
     }
@@ -154,9 +158,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields.Queries_dot_txt, ResourceNames.Queries_dot_txt, "Queries_dot_txt");
-            var value = BackingFields.Queries_dot_txt ??= ReadingMethods.ReadEmbeddedResource(ResourceNames.Queries_dot_txt);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames.Queries_dot_txt, "Queries_dot_txt");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.Queries_dot_txt, EmbeddedResource.ResourceName.Queries_dot_txt, "Queries_dot_txt");
+            var value = EmbeddedResource.BackingField.Queries_dot_txt ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Queries_dot_txt);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.Queries_dot_txt, "Queries_dot_txt");
             return value;
         }
     }
@@ -174,9 +178,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields.Queries_txt, ResourceNames.Queries_txt, "Queries_txt");
-            var value = BackingFields.Queries_txt ??= ReadingMethods.ReadEmbeddedResource(ResourceNames.Queries_txt);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames.Queries_txt, "Queries_txt");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.Queries_txt, EmbeddedResource.ResourceName.Queries_txt, "Queries_txt");
+            var value = EmbeddedResource.BackingField.Queries_txt ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Queries_txt);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.Queries_txt, "Queries_txt");
             return value;
         }
     }
@@ -194,9 +198,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields._dot_txt, ResourceNames._dot_txt, "_dot_txt");
-            var value = BackingFields._dot_txt ??= ReadingMethods.ReadEmbeddedResource(ResourceNames._dot_txt);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames._dot_txt, "_dot_txt");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField._dot_txt, EmbeddedResource.ResourceName._dot_txt, "_dot_txt");
+            var value = EmbeddedResource.BackingField._dot_txt ??= EmbeddedResource.Read(EmbeddedResource.ResourceName._dot_txt);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName._dot_txt, "_dot_txt");
             return value;
         }
     }
@@ -214,9 +218,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields._txt, ResourceNames._txt, "_txt");
-            var value = BackingFields._txt ??= ReadingMethods.ReadEmbeddedResource(ResourceNames._txt);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames._txt, "_txt");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField._txt, EmbeddedResource.ResourceName._txt, "_txt");
+            var value = EmbeddedResource.BackingField._txt ??= EmbeddedResource.Read(EmbeddedResource.ResourceName._txt);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName._txt, "_txt");
             return value;
         }
     }
@@ -234,9 +238,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields._u1F602_, ResourceNames._u1F602_, "_u1F602_");
-            var value = BackingFields._u1F602_ ??= ReadingMethods.ReadEmbeddedResource(ResourceNames._u1F602_);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames._u1F602_, "_u1F602_");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField._u1F602_, EmbeddedResource.ResourceName._u1F602_, "_u1F602_");
+            var value = EmbeddedResource.BackingField._u1F602_ ??= EmbeddedResource.Read(EmbeddedResource.ResourceName._u1F602_);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName._u1F602_, "_u1F602_");
             return value;
         }
     }
@@ -254,9 +258,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields._1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_, ResourceNames._1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_, "_1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_");
-            var value = BackingFields._1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_ ??= ReadingMethods.ReadEmbeddedResource(ResourceNames._1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames._1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_, "_1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField._1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_, EmbeddedResource.ResourceName._1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_, "_1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_");
+            var value = EmbeddedResource.BackingField._1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_ ??= EmbeddedResource.Read(EmbeddedResource.ResourceName._1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName._1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_, "_1_open_at_hash_dollar_close_start_dot_comma_end_space_lt_colon_apos_pipe_gt_");
             return value;
         }
     }
@@ -274,9 +278,9 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields._amp_amp_semi_, ResourceNames._amp_amp_semi_, "_amp_amp_semi_");
-            var value = BackingFields._amp_amp_semi_ ??= ReadingMethods.ReadEmbeddedResource(ResourceNames._amp_amp_semi_);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames._amp_amp_semi_, "_amp_amp_semi_");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField._amp_amp_semi_, EmbeddedResource.ResourceName._amp_amp_semi_, "_amp_amp_semi_");
+            var value = EmbeddedResource.BackingField._amp_amp_semi_ ??= EmbeddedResource.Read(EmbeddedResource.ResourceName._amp_amp_semi_);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName._amp_amp_semi_, "_amp_amp_semi_");
             return value;
         }
     }

@@ -35,12 +35,20 @@
       <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all" />
     </ItemGroup>
 
-    <!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
     <ItemGroup>
+        <!-- Pack the generator dll in the analyzers/dotnet/cs path -->
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    </ItemGroup>
 
-    <ItemGroup>
+        <!-- Pack the attributes dll in the analyzers/dotnet/cs path -->
+        <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+
+        <!-- Pack the attributes dll in the lib\netstandard2.0 path -->
+        <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="true" />
+
         <None Include="../README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\EmbeddedResourcePropertyGenerator.Attributes\EmbeddedResourcePropertyGenerator.Attributes.csproj" PrivateAssets="All" />
     </ItemGroup>
 </Project>

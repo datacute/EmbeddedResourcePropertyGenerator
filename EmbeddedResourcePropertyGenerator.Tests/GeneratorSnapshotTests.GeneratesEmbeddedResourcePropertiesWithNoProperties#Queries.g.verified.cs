@@ -7,19 +7,6 @@
 
 #nullable enable
 
-file static class ReadingMethods
-{
-    public static string ReadEmbeddedResource(string resourceName)
-    {
-        return global::Datacute.EmbeddedResourcePropertyGenerator.EmbeddedResourceReader.Read(typeof(Queries), resourceName);
-    }
-}
-file static class BackingFields
-{
-}
-file static class ResourceNames
-{
-}
 /// <summary>
 /// This class's properties are generated from project files meeting the criteria:
 /// <list type="bullet">
@@ -36,6 +23,23 @@ file static class ResourceNames
 /// </summary>
 public static partial class Queries
 {
+    private static class EmbeddedResource
+    {
+        public static string Read(string resourceName)
+        {
+            var assembly = typeof(Queries).Assembly;
+            using var stream = assembly.GetManifestResourceStream(resourceName)!;
+            using var streamReader = new global::System.IO.StreamReader(stream, global::System.Text.Encoding.UTF8);
+            var resourceText = streamReader.ReadToEnd();
+            return resourceText;
+        }
+        public static class BackingField
+        {
+        }
+        public static class ResourceName
+        {
+        }
+    }
     static partial void ReadEmbeddedResourceValue(ref string? backingField, string resourceName, string propertyName);
     static partial void AlterEmbeddedResourceReturnValue(ref string value, string resourceName, string propertyName);
 }

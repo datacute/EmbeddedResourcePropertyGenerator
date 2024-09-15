@@ -57,8 +57,10 @@ static partial class SqlQueryOverrides
         string propertyName)
     {
         // note the second time, the backingField is not null
-        if (backingField is null && resourceName == "SelectAll")
+        if (backingField is null && resourceName == EmbeddedResource.ResourceName.SelectAll)
         {
+            // This example is contrived. A real-world example might involve
+            // seeing if a file exists in a directory, and if so, reading it instead.
             backingField = "SELECT * FROM NewCustomersView;";
         }
     }

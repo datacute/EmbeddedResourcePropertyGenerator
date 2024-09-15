@@ -9,8 +9,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            context.RegisterPostInitializationOutput(GenerateInitialCode);
-
             var options = context.AnalyzerConfigOptionsProvider
                 .Select(GeneratorOptions.Select);
 
@@ -31,13 +29,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                     var (attributeContext, (additionalTexts, generatorOptions)) = attributeWithFilesAndOptions;
                     GenerateFolderEmbed(sourceProductionContext, attributeContext, additionalTexts, generatorOptions);
                 });
-        }
-
-        private static void GenerateInitialCode(IncrementalGeneratorPostInitializationContext context)
-        {
-            context.CancellationToken.ThrowIfCancellationRequested();
-            context.AddSource($"_{Templates.AttributeName}.g.cs", Templates.AttributeCs);
-            context.AddSource("_EmbeddedResourceReader.g.cs", Templates.EmbeddedResourceReaderCs);
         }
 
         private static void GenerateFolderEmbed(

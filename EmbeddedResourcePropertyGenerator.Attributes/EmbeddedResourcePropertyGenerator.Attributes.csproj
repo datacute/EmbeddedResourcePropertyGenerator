@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>12</LangVersion>
+        <AssemblyName>Datacute.EmbeddedResourcePropertyGenerator.Attributes</AssemblyName>
+        <RootNamespace>Datacute.EmbeddedResourcePropertyGenerator</RootNamespace>
+        <Nullable>enable</Nullable>
+        <Company>Datacute</Company>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+    </PropertyGroup>
+
+</Project>
