@@ -43,25 +43,13 @@
       <None Update="GeneratorSnapshotTests.AlternateFolderSelectedCorrectly#Query.g.verified.cs">
         <DependentUpon>GeneratorSnapshotTests.cs</DependentUpon>
       </None>
-      <None Update="GeneratorSnapshotTests.AlternateFolderSelectedCorrectly#_EmbeddedResourcePropertiesAttribute.g.verified.cs">
-        <DependentUpon>GeneratorSnapshotTests.cs</DependentUpon>
-      </None>
-      <None Update="GeneratorSnapshotTests.AlternateFolderSelectedCorrectly#_EmbeddedResourceReader.g.verified.cs">
-        <DependentUpon>GeneratorSnapshotTests.cs</DependentUpon>
-      </None>
       <None Update="GeneratorSnapshotTests.GeneratesEmbeddedResourcePropertiesCorrectly#Queries.g.verified.cs">
         <DependentUpon>GeneratorSnapshotTests.cs</DependentUpon>
       </None>
-      <None Update="GeneratorSnapshotTests.GeneratesEmbeddedResourcePropertiesCorrectly#_EmbeddedResourcePropertiesAttribute.g.verified.cs">
+      <None Update="GeneratorSnapshotTests.GeneratesEmbeddedResourcePropertiesWithNoProperties#Queries.g.verified.cs">
         <DependentUpon>GeneratorSnapshotTests.cs</DependentUpon>
       </None>
-      <None Update="GeneratorSnapshotTests.GeneratesEmbeddedResourcePropertiesCorrectly#_EmbeddedResourceReader.g.verified.cs">
-        <DependentUpon>GeneratorSnapshotTests.cs</DependentUpon>
-      </None>
-      <None Update="GeneratorSnapshotTests.GeneratesEmbeddedResourcePropertiesWithNoProperties#_EmbeddedResourcePropertiesAttribute.g.verified.cs">
-        <DependentUpon>GeneratorSnapshotTests.cs</DependentUpon>
-      </None>
-      <None Update="GeneratorSnapshotTests.GeneratesEmbeddedResourcePropertiesWithStrangeNamesCorrectly#_EmbeddedResourcePropertiesAttribute.g.verified.cs">
+      <None Update="GeneratorSnapshotTests.GeneratesEmbeddedResourcePropertiesWithStrangeNamesCorrectly#Queries.g.verified.cs">
         <DependentUpon>GeneratorSnapshotTests.cs</DependentUpon>
       </None>
     </ItemGroup>

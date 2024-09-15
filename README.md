@@ -157,9 +157,7 @@ If partial methods are not implemented, the calls to them are removed.
 ```
 
 ## Future Enhancements
-- [ ] Rework inclusion of code in the Datacute namespace
-  - attribute (ConditionalAttribute only removes usages)
-  - shared resource reader (include in  each generated class instead?)
+- [ ] Add an option to leave out the Read method.
 - [ ] Support for alternative text encodings.
   - Overriding `ReadEmbeddedResourceValue` is a technique that can be
     used to read the text content of the embedded resource with a

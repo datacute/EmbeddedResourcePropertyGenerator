@@ -7,21 +7,6 @@
 
 #nullable enable
 
-file static class ReadingMethods
-{
-    public static string ReadEmbeddedResource(string resourceName)
-    {
-        return global::Datacute.EmbeddedResourcePropertyGenerator.EmbeddedResourceReader.Read(typeof(Query), resourceName);
-    }
-}
-file static class BackingFields
-{
-    public static string? Example;
-}
-file static class ResourceNames
-{
-    public const string Example = "EmbeddedResourcePropertyGenerator.Tests.Queries.example.sql";
-}
 /// <summary>
 /// This class's properties are generated from project files meeting the criteria:
 /// <list type="bullet">
@@ -38,6 +23,25 @@ file static class ResourceNames
 /// </summary>
 public static partial class Query
 {
+    private static class EmbeddedResource
+    {
+        public static string Read(string resourceName)
+        {
+            var assembly = typeof(Query).Assembly;
+            using var stream = assembly.GetManifestResourceStream(resourceName)!;
+            using var streamReader = new global::System.IO.StreamReader(stream, global::System.Text.Encoding.UTF8);
+            var resourceText = streamReader.ReadToEnd();
+            return resourceText;
+        }
+        public static class BackingField
+        {
+            public static string? Example;
+        }
+        public static class ResourceName
+        {
+            public const string Example = "EmbeddedResourcePropertyGenerator.Tests.Queries.example.sql";
+        }
+    }
     static partial void ReadEmbeddedResourceValue(ref string? backingField, string resourceName, string propertyName);
     static partial void AlterEmbeddedResourceReturnValue(ref string value, string resourceName, string propertyName);
 
@@ -54,9 +58,9 @@ public static partial class Query
     {
         get
         {
-            ReadEmbeddedResourceValue(ref BackingFields.Example, ResourceNames.Example, "Example");
-            var value = BackingFields.Example ??= ReadingMethods.ReadEmbeddedResource(ResourceNames.Example);
-            AlterEmbeddedResourceReturnValue(ref value, ResourceNames.Example, "Example");
+            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.Example, EmbeddedResource.ResourceName.Example, "Example");
+            var value = EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.Example, "Example");
             return value;
         }
     }

@@ -1,11 +1,13 @@
 Changelog
 --- 
 
-## v0.0.1-alpha.4 (2024-09-14)
+## v0.0.1-alpha.4 (2024-09-15)
 
 ### Features
 
 * Moved the attribute to its own dll
+* Include Read method in each class
+* The Read method, backing fields, and resource names are available to the class
 
 ## v0.0.1-alpha.3 (2024-09-14)
 

@@ -6,6 +6,8 @@
 Features
 
 - Moved the attribute to its own dll
+- Include Read method in each class
+- The Read method, backing fields, and resource names are available to the class 
 
 ]]>
     </PackageReleaseNotes>
