@@ -1,6 +1,12 @@
 Changelog
 --- 
 
+## v0.0.1-alpha.5 (2024-09-22)
+
+### Fixes
+
+* Included doc-comments of the EmbeddedResourceProperties attribute in the package
+
 ## v0.0.1-alpha.4 (2024-09-15)
 
 ### Features
