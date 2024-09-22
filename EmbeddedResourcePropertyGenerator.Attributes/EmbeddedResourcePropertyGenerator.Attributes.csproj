@@ -10,4 +10,8 @@
         <AssemblyVersion>1.0.0</AssemblyVersion>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
 </Project>
