@@ -153,7 +153,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         {
             if (_options.IsDesignTimeBuild) return;
 
-            var path = _resourceSearchPath.Substring(_options.ProjectDir.Length);
+            var path = _resourceSearchPath.Substring(_options.ProjectDir.Length)
+                .Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             _buffer.AppendFormat(Templates.ClassDocComments, path, _context.ExtensionArg);
         }
 

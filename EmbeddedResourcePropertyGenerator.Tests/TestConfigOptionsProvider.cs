@@ -23,8 +23,7 @@ public class TestConfigOptions : AnalyzerConfigOptions
                 value = "false";
                 return true;
             case "build_property.ProjectDir":
-                value =
-                    $@"{TestHelper.TestPath}\";
+                value = TestHelper.TestPath("/");
                 return true;
             case "build_property.RootNamespace":
                 value = TestHelper.TestNamespace;

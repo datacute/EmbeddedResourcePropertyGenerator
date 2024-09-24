@@ -59,7 +59,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             string baseDir;
             string resourceSearchPath;
 
-            if (attributeContext.PathArg.StartsWith("/"))
+            if (attributeContext.PathArg.StartsWith("/") || attributeContext.PathArg.StartsWith("\\"))
             {
                 baseDir = options.ProjectDir;
                 resourceSearchPath = attributeContext.PathArg.Substring(1);

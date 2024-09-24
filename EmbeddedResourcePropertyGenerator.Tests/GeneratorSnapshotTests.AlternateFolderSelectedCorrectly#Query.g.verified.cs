@@ -14,7 +14,7 @@
 /// <description>they are both an <c>EmbeddedResource</c> and an <c>AdditionalFile</c></description>
 /// </item>
 /// <item>
-/// <description>they are in the project folder <c>Queries</c></description>
+/// <description>they are in the project folder <c>ResourceFolders/Queries</c></description>
 /// </item>
 /// <item>
 /// <description>they have the extension <c>.sql</c></description>
@@ -39,7 +39,7 @@ public static partial class Query
         }
         public static class ResourceName
         {
-            public const string Example = "EmbeddedResourcePropertyGenerator.Tests.Queries.example.sql";
+            public const string Example = "EmbeddedResourcePropertyGenerator.Tests.ResourceFolders.Queries.example.sql";
         }
     }
     static partial void ReadEmbeddedResourceValue(ref string? backingField, string resourceName, string propertyName);
