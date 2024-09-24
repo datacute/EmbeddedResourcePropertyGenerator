@@ -1,6 +1,13 @@
 Changelog
 --- 
 
+## v0.0.1-alpha.6 (2024-??-??)
+
+### Features
+
+* Removed windows specific paths from tests
+* More documentation
+
 ## v0.0.1-alpha.5 (2024-09-22)
 
 ### Fixes

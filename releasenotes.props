@@ -1,5 +1,15 @@
 <Project>
   <PropertyGroup>
+    <PackageReleaseNotes Condition="'$(PackageVersion)' == '0.0.1-alpha.6'">
+      <![CDATA[
+
+Features
+
+- Removed windows specific paths from tests
+- More documentation
+
+]]>
+    </PackageReleaseNotes>
     <PackageReleaseNotes Condition="'$(PackageVersion)' == '0.0.1-alpha.5'">
       <![CDATA[
 

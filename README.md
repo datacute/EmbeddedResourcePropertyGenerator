@@ -105,9 +105,27 @@ If you need to embed other types of files, use the
 `Assembly.GetManifestResourceStream` method directly.
 
 ## Extending the Behaviour
+
+The generated code includes a private nested class `EmbeddedResource` containing:
+
+| Method or Class | Purpose |
+|-----------------|---------|
+| `Read(string resourceName)` | Method for reading embedded resources |
+| `BackingField` | Nested class caching the property values |
+| `ResourceName` | Nested class holding the resource names |
+
 The implementation supports including two ***partial methods*** that can
 be implemented in the same partial class as the generated properties.
-If partial methods are not implemented, the calls to them are removed.
+
+If the partial methods are not implemented, the calls to them are removed, 
+and the code effectively reduces to:
+
+```csharp
+public static string Example =>
+        EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+```
+
+### Partial methods:
 - `ReadEmbeddedResourceValue` - This method is called to allow the class
   to override how the value representing the content of the embedded
   resource is obtained. If the `backingField` parameter is null when this
@@ -156,13 +174,52 @@ If partial methods are not implemented, the calls to them are removed.
     }
 ```
 
+This is an example of the code generated for a property, showing how the partial methods are called:
+
+```csharp
+/// <summary>Text value of the Embedded Resource: Example.txt</summary>
+/// <value>
+/// <code>
+/// This is the content of the Example.txt file.
+/// Only the first few lines are shown here.
+/// </code>
+/// </value>
+/// <remarks>
+/// The value is read from the embedded resource on first access.
+/// </remarks>
+public static string Example
+{
+    get
+    {
+        ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.Example, EmbeddedResource.ResourceName.Example, "Example");
+        var value = EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+        AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.Example, "Example");
+        return value;
+    }
+}
+```
+
+## Thanks
+
+Thanks to Andrew Lock for his Series: [Creating a source generator](https://andrewlock.net/series/creating-a-source-generator/).
+
 ## Future Enhancements
 - [ ] Add an option to leave out the Read method.
+  - It is now included in the generated code for each class,
+    but an implementation of the `ReadEmbeddedResourceValue` partial
+    method might make it unnecessary.
 - [ ] Support for alternative text encodings.
   - Overriding `ReadEmbeddedResourceValue` is a technique that can be
     used to read the text content of the embedded resource with a
     different encoding, but the doc-comment will still be generated
     expecting UTF-8.
-- [ ] Support for Specifying the number of lines to include in the
+- [ ] Support for specifying the number of lines to include in the
   doc-comment (including zero to exclude the code section).
+  - This is currently set to 10 lines.
 - [ ] Support generating text formatting methods.
+  - Call `CompositeFormat.Parse` on the loaded text, and additionally count
+    the number of format items, and generate a method that takes the
+    same number of arguments.
+  - Using a resx file is probably a better fit that adding this feature.
+- [ ] Support generating `ReadOnlySpan<byte>` properties instead of `string`
+  - The decoding from utf-8 may not be needed.
