@@ -28,10 +28,10 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore $env:SOLUTION
+      run: dotnet restore $SOLUTION
 
     - name: Build
-      run: dotnet build $env:SOLUTION --configuration $env:BUILD_CONFIG --no-restore
+      run: dotnet build $SOLUTION --configuration $BUILD_CONFIG --no-restore
 
     - name: Run tests
-      run: dotnet test --configuration $env:BUILD_CONFIG --no-restore --no-build --verbosity normal
+      run: dotnet test --configuration $BUILD_CONFIG --no-restore --no-build --verbosity normal
