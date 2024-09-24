@@ -17,7 +17,7 @@ jobs:
       BUILD_CONFIG: 'Release'
       SOLUTION: 'EmbeddedResourceProperty.sln'
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
