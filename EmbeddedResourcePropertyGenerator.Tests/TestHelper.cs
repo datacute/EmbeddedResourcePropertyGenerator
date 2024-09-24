@@ -10,7 +10,10 @@ namespace EmbeddedResourcePropertyGenerator.Tests;
 public static class TestHelper
 {
     public const string TestNamespace = "EmbeddedResourcePropertyGenerator.Tests";
-    public const string TestPath = @"E:\EmbeddedResourcePropertyGenerator.Tests\Tests";
+
+    public static string TestPath(string path) => 
+        Path.GetFullPath($"/EmbeddedResourcePropertyGenerator.Tests/Tests/{path}"
+            .Replace('/', Path.DirectorySeparatorChar));
     
     public static (ImmutableArray<Diagnostic> Diagnostics, string[] Output) GetGeneratedOutput<TAttribute, TGenerator, TTrackingNames>(
         List<AdditionalText>? additionalTexts, 
@@ -42,7 +45,7 @@ public static class TestHelper
     {
         // Convert the source files to SyntaxTrees
         var syntaxTrees = sources.Select(static (s, i) => 
-            CSharpSyntaxTree.ParseText(s).WithFilePath(@$"{TestPath}\Test{i}.cs")
+            CSharpSyntaxTree.ParseText(s).WithFilePath(TestPath($"Test{i}.cs"))
         );
 
         // Configure the assembly references you need

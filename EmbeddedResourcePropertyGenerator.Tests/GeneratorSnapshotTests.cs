@@ -42,13 +42,13 @@ public class GeneratorSnapshotTests
         var additionalTexts = new List<AdditionalText>
         {
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\example.txt", 
+                TestHelper.TestPath("Queries/example.txt"),
                 "Example text content"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\example2.file", 
+                TestHelper.TestPath("Queries/example2.file"),
                 "Example text content with the wrong extension - should not be included"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\WrongFolder\example3.txt", 
+                TestHelper.TestPath("WrongFolder/example3.txt"),
                 "Example text content in the wrong folder - should not be included")
         };
 
@@ -64,7 +64,7 @@ public class GeneratorSnapshotTests
             """
             using Datacute.EmbeddedResourcePropertyGenerator;
 
-            [EmbeddedResourceProperties(".sql", "Queries")]
+            [EmbeddedResourceProperties(".sql", "ResourceFolders/Queries")]
             public static partial class Query;
             """;
 
@@ -72,13 +72,13 @@ public class GeneratorSnapshotTests
         var additionalTexts = new List<AdditionalText>
         {
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\example.sql",
+                TestHelper.TestPath("ResourceFolders/Queries/example.sql"),
                 "Example sql content"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\example2.txt",
+                TestHelper.TestPath("ResourceFolders/Queries/example2.txt"),
                 "Example text content with the wrong extension - should not be included"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Query\example3.sql",
+                TestHelper.TestPath("ResourceFolders/Query/example3.sql"),
                 "Example sql content in the wrong folder (but matching class name) - should not be included")
         };
 
@@ -102,37 +102,37 @@ public class GeneratorSnapshotTests
         var additionalTexts = new List<AdditionalText>
         {
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\1example(1).txt", 
+                TestHelper.TestPath("Queries/1example(1).txt"),
                 "Property names cannot start with a number nor contain special characters"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\1example<1>.txt", 
+                TestHelper.TestPath("Queries/1example<1>.txt"),
                 "Replacing special characters with underscores can cause name collisions"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\test.txt", 
+                TestHelper.TestPath("Queries/test.txt"),
                 "Property names are camel-cased, so this should be Test"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\Test.txt", 
+                TestHelper.TestPath("Queries/Test.txt"),
                 "Upper-casing the first letter can cause name collisions"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\Queries.txt", 
+                TestHelper.TestPath("Queries/Queries.txt"),
                 "Member names cannot be the same as their enclosing type"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\Queries_txt.txt", 
+                TestHelper.TestPath("Queries/Queries_txt.txt"),
                 "Using the full filename can cause name collisions"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\.txt", 
+                TestHelper.TestPath("Queries/.txt"),
                 "The filename without extension is blank, which is not a valid property name"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\_txt.txt", 
+                TestHelper.TestPath("Queries/_txt.txt"),
                 "Using the full filename can cause name collisions"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\😂.txt", 
+                TestHelper.TestPath("Queries/😂.txt"),
                 "Emoji are not valid in property names"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\1(@#$)[.,] <:'|>.txt", 
+                TestHelper.TestPath("Queries/1(@#$)[.,] <:'|>.txt"),
                 "special characters in file names"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\&amp;.txt", 
+                TestHelper.TestPath("Queries/&amp;.txt"),
                 "special characters in file names")
         };
 

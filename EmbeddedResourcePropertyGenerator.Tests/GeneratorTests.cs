@@ -24,13 +24,13 @@ public class GeneratorTests
         var additionalTexts = new List<AdditionalText>
         {
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\example.txt", 
+                TestHelper.TestPath("Queries/example.txt"),
                 "Example text content"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\Queries\example2.file", 
+                TestHelper.TestPath("Queries/example2.file"),
                 "Example text content with the wrong extension - should not be included"),
             new InMemoryAdditionalText(
-                $@"{TestHelper.TestPath}\WrongFolder\example3.txt", 
+                TestHelper.TestPath("WrongFolder/example3.txt"),
                 "Example text content in the wrong folder - should not be included")
         };
         
