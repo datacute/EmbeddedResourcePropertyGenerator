@@ -21,13 +21,11 @@
     <PropertyGroup>
         <PackageId>Datacute.EmbeddedResourcePropertyGenerator</PackageId>
         <Title>Datacute Embedded Resource Property Generator</Title>
-        <Company>Datacute</Company>
         <Description>A source generator creating properties for embedded resources in a project.</Description>
         <PackageTags>SourceGenerator</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageProjectUrl>https://github.com/datacute/EmbeddedResourcePropertyGenerator</PackageProjectUrl>
     </PropertyGroup>
 
     <ItemGroup>

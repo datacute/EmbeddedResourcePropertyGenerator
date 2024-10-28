@@ -39,7 +39,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator;
 /// <para>
 /// If the partial methods are not implemented, the code effectively reduces to:
 /// <code>
-/// public static string Example =>
+/// public static string Example =&gt;
 ///         EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
 /// </code>
 /// </para>
