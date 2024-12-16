@@ -19,17 +19,40 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                     transform: (attributeSyntaxContext, _) => new AttributeContext(attributeSyntaxContext))
                 .WithTrackingName(TrackingNames.InitialExtraction);
 
-            var attributesWithFilesAndOptions = attributeContexts
-                .Combine(context.AdditionalTextsProvider.Collect().Combine(options))
-                .WithTrackingName(TrackingNames.Combine);
+            var attributesContextsAndMatchingAdditionalTexts = 
+                attributeContexts.Combine(context.AdditionalTextsProvider.Collect()).Combine(options)
+                    .Select(MatchAdditionalFiles)
+                    .WithTrackingName(TrackingNames.MatchAdditionalFiles);
+
+            var attributesWithFilesAndOptions = 
+                attributesContextsAndMatchingAdditionalTexts.Combine(options)
+                    .WithTrackingName(TrackingNames.Combine);
 
             context.RegisterSourceOutput(attributesWithFilesAndOptions,
                 (sourceProductionContext, attributeWithFilesAndOptions) =>
                 {
-                    var (attributeContext, (additionalTexts, generatorOptions)) = attributeWithFilesAndOptions;
+                    var ((attributeContext, additionalTexts), generatorOptions) = attributeWithFilesAndOptions;
                     GenerateFolderEmbed(sourceProductionContext, attributeContext, additionalTexts, generatorOptions);
                 });
         }
+
+        private (AttributeContext AttributeContext, ImmutableArray<AdditionalText> AdditionalTexts) MatchAdditionalFiles(((AttributeContext AttributeContext, ImmutableArray<AdditionalText> AdditionalTexts) AttributeContextAndAdditionalTexts, GeneratorOptions Options) attributeContextTextsAndOptions, CancellationToken ct)
+        {
+            var attributeContext = attributeContextTextsAndOptions.AttributeContextAndAdditionalTexts.AttributeContext;
+            var additionalTexts = attributeContextTextsAndOptions.AttributeContextAndAdditionalTexts.AdditionalTexts;
+            var options = attributeContextTextsAndOptions.Options;
+
+            var resourceSearchPath = GetResourceSearchPath(attributeContext, options);
+        
+            var matchingAdditionalTexts = additionalTexts.Where(t => 
+                FileIsInMatchingFolder(t.Path, resourceSearchPath, attributeContext.ExtensionArg)).ToImmutableArray();
+        
+            return (attributeContext, matchingAdditionalTexts);
+        }
+
+        private bool FileIsInMatchingFolder(string resourceFilePath, string resourceSearchPath, string extensionArg) =>
+            Path.GetDirectoryName(resourceFilePath) == resourceSearchPath
+            && Path.GetExtension(resourceFilePath) == extensionArg;
 
         private static void GenerateFolderEmbed(
             in SourceProductionContext context,

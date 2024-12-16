@@ -60,11 +60,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                 _cancellationToken.ThrowIfCancellationRequested();
                 var resourceFilePath = text.Path;
 
-                if (!FileIsInMatchingFolder(resourceFilePath))
-                {
-                    continue;
-                }
-
                 var propertyName = resourceFilePath.GetPropertyName(_context.Name);
                 RecordPropertyNameForResource(propertyName, text);
             }
@@ -231,10 +226,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                 }
             }
         }
-
-        private bool FileIsInMatchingFolder(string resourceFilePath) =>
-            Path.GetDirectoryName(resourceFilePath) == _resourceSearchPath
-            && Path.GetExtension(resourceFilePath) == _context.ExtensionArg;
 
         private string GeneratePropertyDocCommentCode(SourceText sourceText)
         {

@@ -4,5 +4,6 @@
     {
         public const string InitialExtraction = nameof(InitialExtraction);
         public const string Combine = nameof(Combine);
+        public const string MatchAdditionalFiles = nameof(MatchAdditionalFiles);
     }
 }
