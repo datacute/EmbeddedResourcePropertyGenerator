@@ -2,7 +2,7 @@
 
 namespace Datacute.EmbeddedResourcePropertyGenerator
 {
-    public readonly struct GeneratorOptions
+    public readonly record struct GeneratorOptions
     {
         public readonly bool IsDesignTimeBuild;
         public readonly string ProjectDir;
