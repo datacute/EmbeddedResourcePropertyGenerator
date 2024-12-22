@@ -2,7 +2,7 @@
 
 namespace Datacute.EmbeddedResourcePropertyGenerator
 {
-    public readonly struct AttributeContext
+    public readonly record struct AttributeContext
     {
         public readonly string ExtensionArg;
         public readonly string PathArg;
