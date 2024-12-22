@@ -4,12 +4,17 @@ on:
   push:
     branches:
     - main
-    - alpha
+    - develop
   pull_request:
     branches:
     - main
+    - develop
   workflow_dispatch:
     
+permissions:
+  checks: write
+  statuses: write
+
 jobs:
   build:
 
