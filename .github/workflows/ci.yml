@@ -11,6 +11,10 @@ on:
     - develop
   workflow_dispatch:
     
+permissions:
+  checks: write
+  statuses: write
+
 jobs:
   build:
 
