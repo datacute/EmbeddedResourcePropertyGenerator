@@ -1,13 +1,7 @@
 ﻿namespace Datacute.EmbeddedResourcePropertyGenerator;
 
-public readonly struct EmbeddedResource
+public readonly record struct EmbeddedResource(string Path, string? DocCommentCode)
 {
-    public string Path { get; }
-    public string? DocCommentCode { get; }
-
-    public EmbeddedResource(string path, string? docCommentCode)
-    {
-        Path = path;
-        DocCommentCode = docCommentCode;
-    }
+    public string Path { get; } = Path;
+    public string? DocCommentCode { get; } = DocCommentCode;
 }
