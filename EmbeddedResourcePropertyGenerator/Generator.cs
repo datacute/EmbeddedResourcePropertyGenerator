@@ -56,7 +56,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                 .Where(t => FileIsInMatchingFolder(t.Path, resourceSearchPath, attributeContext.ExtensionArg))
                 .Select(additionalText =>
                 {
-                    var docCommentCode = AdditionalTextDocCommentCreator.GenerateDocCommentCode(additionalText, ct);
+                    // Skip generating doc comments during design-time builds
+                    var docCommentCode = options.IsDesignTimeBuild ? null : AdditionalTextDocCommentCreator.GenerateDocCommentCode(additionalText, ct);
                     return new EmbeddedResource(additionalText.Path, docCommentCode!);
                 }).ToImmutableEquatableArray();
 

@@ -27,11 +27,18 @@ public static class TestHelper
         return trackingNames;
     }
 
+    public static (GeneratorDriver, CSharpCompilation)
+        NoModification(
+            GeneratorDriver driver,
+            CSharpCompilation compilation)
+        => (driver, compilation);
+    
     public static (ImmutableArray<Diagnostic> Diagnostics, string[] Output1, string[] Output2)
         GetGeneratedOutput<TAttribute, TGenerator>(
+            Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)> scenarioModification,
             List<AdditionalText>? additionalTexts,
             string[] trackingNamesToVerifyUnchanged,
-            Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)>? modificationBetweenRuns = null,
+            Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)> modificationBetweenRuns,
             params string[] sources)
         where TAttribute : Attribute
         where TGenerator : IIncrementalGenerator, new()
@@ -41,6 +48,7 @@ public static class TestHelper
         // Run the generator, get the results, and assert cacheability if applicable
         (GeneratorDriverRunResult runResult1, GeneratorDriverRunResult runResult2) =
             RunGeneratorAndAssertOutput<TGenerator>(
+                scenarioModification,
                 additionalTexts,
                 compilation,
                 trackingNamesToVerifyUnchanged,
@@ -77,13 +85,16 @@ public static class TestHelper
     }
 
     private static (GeneratorDriverRunResult, GeneratorDriverRunResult) RunGeneratorAndAssertOutput<TGenerator>(
+        Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)> scenarioModification,
         List<AdditionalText>? additionalTexts,
         CSharpCompilation compilation, 
         string[] trackingNamesToVerifyUnchanged,
-        Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)>? modificationBetweenRuns = null)
+        Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)> modificationBetweenRuns)
         where TGenerator : IIncrementalGenerator, new()
     {
         var driver = GetDriver<TGenerator>(additionalTexts);
+
+        (driver, compilation) = scenarioModification(driver, compilation);
 
         var clone = compilation.Clone();
 
@@ -93,10 +104,7 @@ public static class TestHelper
         var runResult = driver.GetRunResult();
 
         // If a modification between runs is specified, apply it
-        if (modificationBetweenRuns != null)
-        {
-            (driver, clone) = modificationBetweenRuns(driver, clone);
-        }
+        (driver, clone) = modificationBetweenRuns(driver, clone);
 
         // Run with a clone of the compilation
         var runResult2 = driver
@@ -146,9 +154,14 @@ public static class TestHelper
 
         // These should be the same
         trackedSteps1.Should()
-            .NotBeEmpty()
-            .And.HaveSameCount(trackedSteps2)
-            .And.ContainKeys(trackedSteps2.Keys);
+            .HaveSameCount(trackingNamesToVerifyUnchanged)
+            .And.HaveSameCount(trackedSteps2);
+
+        if (trackingNamesToVerifyUnchanged.Length > 0)
+        {
+            trackedSteps1.Should()
+                .ContainKeys(trackedSteps2.Keys);
+        }
 
         foreach (var trackedStep in trackedSteps1)
         {
