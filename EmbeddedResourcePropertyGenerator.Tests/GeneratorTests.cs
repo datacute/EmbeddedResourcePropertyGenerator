@@ -22,7 +22,20 @@ public class GeneratorTests
     [
         new InMemoryAdditionalText(
             TestHelper.TestPath("Queries/example.txt"),
-            "Example text content"),
+            """
+            Example text content (Line 1)
+            Example text content (Line 2)
+            Example text content (Line 3)
+            Example text content (Line 4)
+            Example text content (Line 5)
+            Example text content (Line 6)
+            Example text content (Line 7)
+            Example text content (Line 8)
+            Example text content (Line 9)
+            Example text content (Line 10)
+            Example text content (Line 11)
+            Example text content (Line 12)
+            """),
 
         new InMemoryAdditionalText(
             TestHelper.TestPath("Queries/example2.file"),
@@ -85,7 +98,17 @@ public class GeneratorTests
                   /// <summary>Text value of the Embedded Resource: example.txt</summary>
                   /// <value>
                   /// <code>
-                  /// Example text content
+                  /// Example text content (Line 1)
+                  /// Example text content (Line 2)
+                  /// Example text content (Line 3)
+                  /// Example text content (Line 4)
+                  /// Example text content (Line 5)
+                  /// Example text content (Line 6)
+                  /// Example text content (Line 7)
+                  /// Example text content (Line 8)
+                  /// Example text content (Line 9)
+                  /// Example text content (Line 10)
+                  /// ... 2 more lines
                   /// </code>
                   /// </value>
                   /// <remarks>
@@ -133,9 +156,10 @@ public class GeneratorTests
                 TestHelper.GetTrackingNames<TrackingNames>(),
                 (driver, compilation) =>
                 {
+                    // The second additional text (with index 1) is not matched by the attribute
                     if (_additionalTexts[1] is InMemoryAdditionalText changingText)
                     {
-                        var newText = new InMemoryAdditionalText(changingText.Path, "Changed content");
+                        var newText = changingText.Replace(changingText.TextSpan, "Changed content");
                         driver = driver.ReplaceAdditionalText(changingText, newText);
                     }
 
@@ -166,7 +190,26 @@ public class GeneratorTests
                 {
                     if (_additionalTexts[0] is InMemoryAdditionalText changingText)
                     {
-                        var newText = new InMemoryAdditionalText(changingText.Path, "Changed content");
+                        // Not only does the DocComment change,
+                        // but the truncation no longer happens.
+                        // Truncation happens after 10 lines
+                        // but if there are only 11 lines,
+                        // we show the last line instead of a line saying that there is 1 more line.
+                        // (As a bonus - "x more lines" is always plural)
+                        var newText = changingText.Replace(changingText.TextSpan, 
+                            """
+                            New text content (Line 1)
+                            New text content (Line 2)
+                            New text content (Line 3)
+                            New text content (Line 4)
+                            New text content (Line 5)
+                            New text content (Line 6)
+                            New text content (Line 7)
+                            New text content (Line 8)
+                            New text content (Line 9)
+                            New text content (Line 10)
+                            New text content (Line 11)
+                            """);
                         driver = driver.ReplaceAdditionalText(changingText, newText);
                     }
 
@@ -178,6 +221,55 @@ public class GeneratorTests
         using var s = new AssertionScope();
         diagnostics.Should().BeEmpty();
         output1.LastOrDefault().Should().Be(ExpectedOutput1);
-        output2.LastOrDefault().Should().Be(ExpectedOutput1.Replace("/// Example text content", "/// Changed content"));
+        output2.LastOrDefault().Should().Be(
+            ExpectedOutput1
+                .Replace("/// Example text content", "/// New text content")
+                .Replace("/// ... 2 more lines", "/// New text content (Line 11)")
+            );
+    }
+
+    [Fact]
+    public void ModifiedTextAfterTenthLine_PipelineEntirelyCached()
+    {
+        // run the generator, passing in the inputs and the tracking names
+        var (diagnostics, output1, output2)
+            = TestHelper.GetGeneratedOutput<EmbeddedResourcePropertiesAttribute, Generator>(
+                _additionalTexts,
+                [
+                    nameof(TrackingNames.OptionGeneration),
+                    nameof(TrackingNames.FindAttributes),
+                    nameof(TrackingNames.AttributesAndOptions)
+                ],
+                (driver, compilation) =>
+                {
+                    if (_additionalTexts[0] is InMemoryAdditionalText changingText)
+                    {
+                        var newText = changingText.Replace(changingText.TextSpan, 
+                            """
+                            Example text content (Line 1)
+                            Example text content (Line 2)
+                            Example text content (Line 3)
+                            Example text content (Line 4)
+                            Example text content (Line 5)
+                            Example text content (Line 6)
+                            Example text content (Line 7)
+                            Example text content (Line 8)
+                            Example text content (Line 9)
+                            Example text content (Line 10)
+                            New text content (Line 11)
+                            New text content (Line 12)
+                            """);
+                        driver = driver.ReplaceAdditionalText(changingText, newText);
+                    }
+
+                    return (driver, compilation);
+                },
+                InputSource);
+
+        // Assert the output
+        using var s = new AssertionScope();
+        diagnostics.Should().BeEmpty();
+        output1.LastOrDefault().Should().Be(ExpectedOutput1);
+        output2.LastOrDefault().Should().Be(ExpectedOutput1);
     }
 }

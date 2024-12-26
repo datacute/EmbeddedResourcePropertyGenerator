@@ -20,18 +20,24 @@ public static class AdditionalTextDocCommentCreator
         var outputLines = 0;
         foreach (var textLine in textLineCollection)
         {
-            outputLines++;
-            if (outputLines > 10 && lineCount > outputLines + 1)
+            // Truncation happens after 10 lines
+            // but if there are only 11 lines,
+            // we show the last line instead of a line saying that there is 1 more line.
+            // (As a bonus - "x more lines" is always plural)
+            const int maxLinesToShow = 10;
+            if (outputLines >= maxLinesToShow && lineCount > maxLinesToShow + 1)
             {
                 var moreLines = $"... {lineCount - outputLines} more lines";
                 sb.AppendLine()
                     .Append("    /// ").Append(moreLines);
                 break;
             }
+
             var textString = textLine.ToString();
             var escapedLine = EscapeStringForDocComments(textString);
             sb.AppendLine()
                 .Append("    /// ").Append(escapedLine);
+            outputLines++;
         }
 
         return sb.ToString();

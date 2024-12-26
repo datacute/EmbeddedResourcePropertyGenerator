@@ -4,14 +4,27 @@ using System.Text;
 
 namespace EmbeddedResourcePropertyGenerator.Tests;
 
-public class InMemoryAdditionalText(string path, string content) : AdditionalText
+public class InMemoryAdditionalText : AdditionalText
 {
-    public override string Path => path;
+    private readonly SourceText? _sourceText;
+    public override string Path { get; }
+    public TextSpan TextSpan => new(0, _sourceText?.Length ?? 0);
+    public override SourceText? GetText(CancellationToken cancellationToken = default) => _sourceText;
 
-    public override SourceText GetText(CancellationToken cancellationToken = default) => SourceText.From(
+    public InMemoryAdditionalText(string path, string content) : this(path, SourceText.From(
         new MemoryStream(Encoding.UTF8.GetBytes(content)), 
         Encoding.UTF8, 
         SourceHashAlgorithm.Sha1, 
         false, 
-        true);
+        true))
+    {
+    }
+
+    private InMemoryAdditionalText(string path, SourceText? sourceText)
+    {
+        _sourceText = sourceText;
+        Path = path;
+    }
+    
+    public InMemoryAdditionalText Replace(TextSpan span, string newText) => new(Path, _sourceText?.Replace(span, newText));
 }
