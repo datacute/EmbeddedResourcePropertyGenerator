@@ -12,7 +12,7 @@ public class GeneratorTests
           using Datacute.EmbeddedResourcePropertyGenerator;
           namespace {{TestHelper.TestNamespace}}
           {
-              [EmbeddedResourceProperties]
+              [EmbeddedResourceProperties(".txt", "Queries", regenerateDocCommentsWhileEditing: true)] // Ignore the cache
               public static partial class Queries;
           }
           """;
@@ -232,6 +232,39 @@ public class GeneratorTests
     }
 
     [Fact]
+    public void CachedDocComments_FilesAreNotReadWhenChanged()
+    {
+        // run the generator, passing in the inputs and the tracking names
+        var (diagnostics, output1, output2)
+            = TestHelper.GetGeneratedOutput<EmbeddedResourcePropertiesAttribute, Generator>(
+                TestHelper.NoModification,
+                _additionalTexts,
+                [
+                    nameof(TrackingNames.OptionGeneration),
+                    nameof(TrackingNames.FindAttributes),
+                    nameof(TrackingNames.AttributesAndOptions)
+                ],
+                (driver, compilation) =>
+                {
+                    if (_additionalTexts[0] is InMemoryAdditionalText changingText)
+                    {
+                        var newText = changingText.Replace(changingText.TextSpan, 
+                            "Completely different text content");
+                        driver = driver.ReplaceAdditionalText(changingText, newText);
+                    }
+
+                    return (driver, compilation);
+                },
+                InputSource.Replace(", regenerateDocCommentsWhileEditing: true", "")); // Change the attribute to not ignore the cache
+
+        // Assert the output
+        using var s = new AssertionScope();
+        diagnostics.Should().BeEmpty();
+        output1.LastOrDefault().Should().Be(ExpectedOutput1);
+        output2.LastOrDefault().Should().Be(ExpectedOutput1);
+    }
+
+    [Fact]
     public void ModifiedTextAfterTenthLine_PipelineEntirelyCached()
     {
         // run the generator, passing in the inputs and the tracking names
@@ -278,7 +311,7 @@ public class GeneratorTests
     }
 
     [Fact]
-    public void DesignTimeBuild_DoesntReadFiles()
+    public void DesignTimeBuild_DoesNotReadFiles()
     {
         // run the generator, passing in the inputs and the tracking names
         var (diagnostics, output1, output2)

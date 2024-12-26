@@ -100,4 +100,10 @@ public sealed class EmbeddedResourcePropertiesAttribute : Attribute
         Extension = extension;
         Path = path;
     }
+
+    public EmbeddedResourcePropertiesAttribute(string extension = ".txt", string? path = null, bool regenerateDocCommentsWhileEditing = false)
+    {
+        Extension = extension;
+        Path = path;
+    }
 }

@@ -7,6 +7,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     [Generator(LanguageNames.CSharp)]
     public sealed class Generator : IIncrementalGenerator
     {
+        private readonly Dictionary<string, EmbeddedResource> _embeddedResourceCache = new();
+
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var options = context.AnalyzerConfigOptionsProvider
@@ -53,20 +55,47 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             var resourceSearchPath = GetResourceSearchPath(attributeContext, options);
 
             var embeddedResources = additionalTexts
-                .Where(t => FileIsInMatchingFolder(t.Path, resourceSearchPath, attributeContext.ExtensionArg))
-                .Select(additionalText =>
-                {
-                    // Skip generating doc comments during design-time builds
-                    var docCommentCode = options.IsDesignTimeBuild ? null : AdditionalTextDocCommentCreator.GenerateDocCommentCode(additionalText, ct);
-                    return new EmbeddedResource(additionalText.Path, docCommentCode!);
-                }).ToImmutableEquatableArray();
+                .Where(additionalText => FileIsInMatchingFolder(additionalText, resourceSearchPath, attributeContext))
+                .Select(additionalText => GetDocCommentCode(ct, additionalText, options, attributeContext))
+                .ToImmutableEquatableArray();
 
             return (attributeContext, embeddedResources);
         }
 
-        private bool FileIsInMatchingFolder(string resourceFilePath, string resourceSearchPath, string extensionArg) =>
-            Path.GetDirectoryName(resourceFilePath) == resourceSearchPath
-            && Path.GetExtension(resourceFilePath) == extensionArg;
+        private static bool FileIsInMatchingFolder(
+            AdditionalText additionalText,
+            string resourceSearchPath,
+            AttributeContext attributeContext)
+        {
+            return Path.GetDirectoryName(additionalText.Path) == resourceSearchPath &&
+                   Path.GetExtension(additionalText.Path) == attributeContext.ExtensionArg;
+        }
+
+        private EmbeddedResource GetDocCommentCode(
+            CancellationToken ct, 
+            AdditionalText additionalText,
+            GeneratorOptions options, 
+            AttributeContext attributeContext)
+        {
+            // Skip generating doc comments during design-time builds
+            if (options.IsDesignTimeBuild)
+            {
+                return new EmbeddedResource(additionalText.Path, null);
+            }
+
+            if (attributeContext.TriggerDocCommentCacheRebuildArg || !_embeddedResourceCache.TryGetValue(additionalText.Path, out var embeddedResource))
+            {
+                // This is the first time we've seen this file, so read the file and generate the doc comments
+                var docCommentCode = AdditionalTextDocCommentCreator.GenerateDocCommentCode(additionalText, ct);
+                embeddedResource = new EmbeddedResource(additionalText.Path, docCommentCode);
+                if (docCommentCode is not null)
+                {
+                    _embeddedResourceCache[additionalText.Path] = embeddedResource;
+                }
+            }
+
+            return embeddedResource;
+        }
 
         private static void GenerateFolderEmbed(
             in SourceProductionContext context,
