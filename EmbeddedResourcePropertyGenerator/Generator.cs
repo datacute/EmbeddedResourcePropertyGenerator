@@ -7,34 +7,100 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     [Generator(LanguageNames.CSharp)]
     public sealed class Generator : IIncrementalGenerator
     {
+        private readonly Dictionary<string, EmbeddedResource> _embeddedResourceCache = new();
+
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var options = context.AnalyzerConfigOptionsProvider
-                .Select(GeneratorOptions.Select);
+                .Select(GeneratorOptions.Select)
+                .WithTrackingName(TrackingNames.OptionGeneration);
 
             var attributeContexts = context.SyntaxProvider
                 .ForAttributeWithMetadataName(
                     Templates.AttributeFullyQualified,
                     predicate: (node, _) => node is TypeDeclarationSyntax,
                     transform: (attributeSyntaxContext, _) => new AttributeContext(attributeSyntaxContext))
-                .WithTrackingName(TrackingNames.InitialExtraction);
+                .WithTrackingName(TrackingNames.FindAttributes);
 
-            var attributesWithFilesAndOptions = attributeContexts
-                .Combine(context.AdditionalTextsProvider.Collect().Combine(options))
-                .WithTrackingName(TrackingNames.Combine);
+            var attributeContextsAndOptions = attributeContexts.Combine(options)
+                .WithTrackingName(TrackingNames.AttributesAndOptions);
+
+            var attributesContextsAndMatchingEmbeddedResources = 
+                attributeContextsAndOptions.Combine(context.AdditionalTextsProvider.Collect())
+                    .Select(ExtractEmbeddedResourceDocComments)
+                    .WithTrackingName(TrackingNames.EmbeddedResourceDocComments);
+
+            var attributesWithFilesAndOptions = 
+                attributesContextsAndMatchingEmbeddedResources.Combine(options)
+                    .WithTrackingName(TrackingNames.Combine);
 
             context.RegisterSourceOutput(attributesWithFilesAndOptions,
                 (sourceProductionContext, attributeWithFilesAndOptions) =>
                 {
-                    var (attributeContext, (additionalTexts, generatorOptions)) = attributeWithFilesAndOptions;
-                    GenerateFolderEmbed(sourceProductionContext, attributeContext, additionalTexts, generatorOptions);
+                    var ((attributeContext, embeddedResources), generatorOptions) = attributeWithFilesAndOptions;
+                    GenerateFolderEmbed(sourceProductionContext, attributeContext, embeddedResources, generatorOptions);
                 });
+        }
+
+        private (AttributeContext AttributeContext, ImmutableEquatableArray<EmbeddedResource> EmbeddedResources)
+            ExtractEmbeddedResourceDocComments(
+                ((AttributeContext AttributeContext, GeneratorOptions Options) AttributeContextAndOptions, 
+                    ImmutableArray<AdditionalText> AdditionalTexts) attributeContextOptionsAndAdditionalTexts,
+                CancellationToken ct)
+        {
+            var attributeContext = attributeContextOptionsAndAdditionalTexts.AttributeContextAndOptions.AttributeContext;
+            var options = attributeContextOptionsAndAdditionalTexts.AttributeContextAndOptions.Options;
+            var additionalTexts = attributeContextOptionsAndAdditionalTexts.AdditionalTexts;
+
+            var resourceSearchPath = GetResourceSearchPath(attributeContext, options);
+
+            var embeddedResources = additionalTexts
+                .Where(additionalText => FileIsInMatchingFolder(additionalText, resourceSearchPath, attributeContext))
+                .Select(additionalText => GetDocCommentCode(ct, additionalText, options, attributeContext))
+                .ToImmutableEquatableArray();
+
+            return (attributeContext, embeddedResources);
+        }
+
+        private static bool FileIsInMatchingFolder(
+            AdditionalText additionalText,
+            string resourceSearchPath,
+            AttributeContext attributeContext)
+        {
+            return Path.GetDirectoryName(additionalText.Path) == resourceSearchPath &&
+                   Path.GetExtension(additionalText.Path) == attributeContext.ExtensionArg;
+        }
+
+        private EmbeddedResource GetDocCommentCode(
+            CancellationToken ct, 
+            AdditionalText additionalText,
+            GeneratorOptions options, 
+            AttributeContext attributeContext)
+        {
+            // Skip generating doc comments during design-time builds
+            if (options.IsDesignTimeBuild)
+            {
+                return new EmbeddedResource(additionalText.Path, null);
+            }
+
+            if (attributeContext.TriggerDocCommentCacheRebuildArg || !_embeddedResourceCache.TryGetValue(additionalText.Path, out var embeddedResource))
+            {
+                // This is the first time we've seen this file, so read the file and generate the doc comments
+                var docCommentCode = AdditionalTextDocCommentCreator.GenerateDocCommentCode(additionalText, ct);
+                embeddedResource = new EmbeddedResource(additionalText.Path, docCommentCode);
+                if (docCommentCode is not null)
+                {
+                    _embeddedResourceCache[additionalText.Path] = embeddedResource;
+                }
+            }
+
+            return embeddedResource;
         }
 
         private static void GenerateFolderEmbed(
             in SourceProductionContext context,
             in AttributeContext attributeContext,
-            ImmutableArray<AdditionalText> additionalTexts,
+            ImmutableEquatableArray<EmbeddedResource> embeddedResources,
             in GeneratorOptions options)
         {
             var cancellationToken = context.CancellationToken;
@@ -45,7 +111,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             var codeGenerator = new CodeGenerator(
                 attributeContext,
                 resourceSearchPath,
-                additionalTexts,
+                embeddedResources,
                 options,
                 cancellationToken);
 

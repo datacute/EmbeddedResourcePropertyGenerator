@@ -2,10 +2,11 @@
 
 namespace Datacute.EmbeddedResourcePropertyGenerator
 {
-    public readonly struct AttributeContext
+    public readonly record struct AttributeContext
     {
         public readonly string ExtensionArg;
         public readonly string PathArg;
+        public readonly bool TriggerDocCommentCacheRebuildArg;
 
         public readonly string FilePath;
 
@@ -27,6 +28,10 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             var args = attributeData.ConstructorArguments;
             ExtensionArg = (args.Length == 0 ? null : args[0].Value as string) ?? ".txt";
             PathArg = (args.Length < 2 ? null : args[1].Value as string) ?? attributeTargetSymbol.Name;
+            TriggerDocCommentCacheRebuildArg =  
+                args.Length >= 3 && 
+                args[2].Value is bool && 
+                (bool)(args[2].Value ?? false);
             // override with named arguments
             if (!attributeData.NamedArguments.IsEmpty)
             {

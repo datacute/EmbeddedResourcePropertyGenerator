@@ -1,7 +1,5 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Datacute.EmbeddedResourcePropertyGenerator
 {
@@ -9,27 +7,27 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     {
         public CodeGenerator(in AttributeContext context,
             string resourceSearchPath,
-            in ImmutableArray<AdditionalText> additionalTexts,
+            in ImmutableEquatableArray<EmbeddedResource> embeddedResources,
             in GeneratorOptions options,
             in CancellationToken cancellationToken)
         {
             _context = context;
             _resourceSearchPath = resourceSearchPath;
-            _additionalTexts = additionalTexts;
+            _embeddedResources = embeddedResources;
             _options = options;
             _cancellationToken = cancellationToken;
             _buffer = new StringBuilder();
-            _propertyNames = new Dictionary<string, AdditionalText>();
+            _propertyNames = new Dictionary<string, EmbeddedResource>();
         }
 
         private readonly AttributeContext _context;
         private readonly string _resourceSearchPath;
-        private readonly ImmutableArray<AdditionalText> _additionalTexts;
+        private readonly ImmutableEquatableArray<EmbeddedResource> _embeddedResources;
         private readonly GeneratorOptions _options;
         private readonly StringBuilder _buffer;
         private readonly CancellationToken _cancellationToken;
         
-        private readonly Dictionary<string, AdditionalText> _propertyNames;
+        private readonly Dictionary<string, EmbeddedResource> _propertyNames;
 
         public string GenerateSource()
         {
@@ -47,7 +45,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             ResourceNames();
             AppendEndClass(4);
             AppendPartialMethods();
-            ProcessMatchingAdditionalFiles();
+            ProcessMatchingEmbeddedResources();
             AppendEndClass();
             return _buffer.ToString();
         }
@@ -55,22 +53,17 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         private void GeneratePropertyNames()
         {
             _propertyNames.Clear();
-            foreach (var text in _additionalTexts)
+            foreach (var text in _embeddedResources)
             {
                 _cancellationToken.ThrowIfCancellationRequested();
                 var resourceFilePath = text.Path;
-
-                if (!FileIsInMatchingFolder(resourceFilePath))
-                {
-                    continue;
-                }
 
                 var propertyName = resourceFilePath.GetPropertyName(_context.Name);
                 RecordPropertyNameForResource(propertyName, text);
             }
         }
 
-        private void RecordPropertyNameForResource(string propertyName, AdditionalText text)
+        private void RecordPropertyNameForResource(string propertyName, EmbeddedResource text)
         {
             // finding "Classname.txt" (converted to "Classname_txt")
             // before an actual "Classname_txt.txt"
@@ -198,7 +191,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         private void AppendPartialMethods() => _buffer.AppendLine(Templates.PartialMethods);
 
-        private void ProcessMatchingAdditionalFiles()
+        private void ProcessMatchingEmbeddedResources()
         {
             foreach (var kvp in _propertyNames)
             {
@@ -214,15 +207,12 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                 }
                 else
                 {
-                    var sourceText = text.GetText(_cancellationToken);
-                    if (sourceText is null)
+                    var resourceFileName = resourceFilePath.GetFileName();
+                    var docCommentCode = text.DocCommentCode;
+                    if (docCommentCode is null)
                     {
                         continue;
                     }
-
-                    var resourceFileName = resourceFilePath.GetFileName();
-
-                    var docCommentCode = GeneratePropertyDocCommentCode(sourceText);
 
                     _buffer.AppendFormat(Templates.PropertyTemplate,
                         propertyName,
@@ -231,42 +221,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                 }
             }
         }
-
-        private bool FileIsInMatchingFolder(string resourceFilePath) =>
-            Path.GetDirectoryName(resourceFilePath) == _resourceSearchPath
-            && Path.GetExtension(resourceFilePath) == _context.ExtensionArg;
-
-        private string GeneratePropertyDocCommentCode(SourceText sourceText)
-        {
-            var sb = new StringBuilder();
-            var textLineCollection = sourceText.Lines;
-            var lineCount = textLineCollection.Count;
-            var outputLines = 0;
-            foreach (var textLine in textLineCollection)
-            {
-                outputLines++;
-                if (outputLines > 10 && lineCount > outputLines + 1)
-                {
-                    var moreLines = $"... {lineCount - outputLines} more lines";
-                    sb.AppendLine()
-                        .Append("    /// ").Append(moreLines);
-                    break;
-                }
-                var textString = textLine.ToString();
-                var escapedLine = EscapeStringForDocComments(textString);
-                sb.AppendLine()
-                    .Append("    /// ").Append(escapedLine);
-            }
-
-            return sb.ToString();
-        }
-
-        private string EscapeStringForDocComments(string input) =>
-            input.Replace("&", "&amp;")
-                .Replace("<", "&lt;")
-                .Replace(">", "&gt;")
-                .Replace("\"", "&quot;")
-                .Replace("'", "&apos;");
 
         private void AppendEndClass(int indent = 0)
         {
