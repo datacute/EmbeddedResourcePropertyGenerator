@@ -17,6 +17,8 @@ public static class TestHelper
     
     public static (ImmutableArray<Diagnostic> Diagnostics, string[] Output) GetGeneratedOutput<TAttribute, TGenerator, TTrackingNames>(
         List<AdditionalText>? additionalTexts, 
+        int indexOfAdditionalTextToModify,
+        string[] trackingNameChangesToIgnore,
         params string[] sources)
         where TAttribute : Attribute
         where TGenerator : IIncrementalGenerator, new()
@@ -33,7 +35,11 @@ public static class TestHelper
 
         // Run the generator, get the results, and assert cacheability if applicable
         GeneratorDriverRunResult runResult = RunGeneratorAndAssertOutput<TGenerator>(
-            additionalTexts, compilation, trackingNames);
+            additionalTexts, 
+            indexOfAdditionalTextToModify, 
+            compilation, 
+            trackingNames,
+            trackingNameChangesToIgnore);
 
         // Return the generator diagnostics and generated sources
         return (runResult.Diagnostics, runResult.GeneratedTrees.Select(x => x.ToString()).ToArray());
@@ -66,8 +72,10 @@ public static class TestHelper
 
     private static GeneratorDriverRunResult RunGeneratorAndAssertOutput<TGenerator>(
         List<AdditionalText>? additionalTexts,
+        int indexOfAdditionalTextToModify,
         CSharpCompilation compilation, 
         string[] trackingNames, 
+        string[] trackingNameChangesToIgnore,
         bool assertOutput = true)
         where TGenerator : IIncrementalGenerator, new()
     {
@@ -82,16 +90,26 @@ public static class TestHelper
 
         if (!assertOutput) return runResult;
 
+        if (indexOfAdditionalTextToModify >= 0)
+        {
+            if (additionalTexts?[indexOfAdditionalTextToModify] is InMemoryAdditionalText changingText)
+            {
+                var newText = new InMemoryAdditionalText(changingText.Path, "Changed content");
+                driver = driver.ReplaceAdditionalText(changingText, newText);
+            }
+        }
+
         // Run with a clone of the compilation
         var runResult2 = driver
             .RunGenerators(clone)
             .GetRunResult();
 
-        AssertRunsEqual(runResult, runResult2, trackingNames);
+        AssertRunsEqual(runResult, runResult2, trackingNames, trackingNameChangesToIgnore);
             
         // verify the second run only generated cached source outputs
         runResult2.Results[0]
             .TrackedOutputSteps
+            .Where(step => !trackingNameChangesToIgnore.Contains(step.Key))
             .SelectMany(x => x.Value) // step executions
             .SelectMany(x => x.Outputs) // execution results
             .Should()
@@ -118,11 +136,12 @@ public static class TestHelper
             driverOptions: generatorDriverOptions);
     }
 
-    private static void AssertRunsEqual(GeneratorDriverRunResult runResult1, GeneratorDriverRunResult runResult2, string[] trackingNames)
+    private static void AssertRunsEqual(GeneratorDriverRunResult runResult1, GeneratorDriverRunResult runResult2,
+        string[] trackingNames, string[] trackingNameChangesToIgnore)
     {
         // We're given all the tracking names, but not all the stages have necessarily executed so filter
-        Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> trackedSteps1 = GetTrackedSteps(runResult1, trackingNames);
-        Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> trackedSteps2 = GetTrackedSteps(runResult2, trackingNames);
+        Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> trackedSteps1 = GetTrackedSteps(runResult1, trackingNames, trackingNameChangesToIgnore);
+        Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> trackedSteps2 = GetTrackedSteps(runResult2, trackingNames, trackingNameChangesToIgnore);
 
         // These should be the same
         trackedSteps1.Should()
@@ -139,10 +158,14 @@ public static class TestHelper
         }
     }
 
-    private static Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> GetTrackedSteps(GeneratorDriverRunResult runResult, string[] trackingNames) =>
+    private static Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> GetTrackedSteps(
+        GeneratorDriverRunResult runResult, 
+        string[] trackingNames,
+        string[] trackingNameChangesToIgnore
+        ) =>
         runResult.Results[0]
             .TrackedSteps
-            .Where(step => trackingNames.Contains(step.Key))
+            .Where(step => trackingNames.Contains(step.Key) && !trackingNameChangesToIgnore.Contains(step.Key))
             .ToDictionary(x => x.Key, x => x.Value);
 
     private static void AssertEqual(

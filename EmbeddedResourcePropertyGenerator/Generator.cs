@@ -10,19 +10,23 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var options = context.AnalyzerConfigOptionsProvider
-                .Select(GeneratorOptions.Select);
+                .Select(GeneratorOptions.Select)
+                .WithTrackingName(TrackingNames.OptionGeneration);
 
             var attributeContexts = context.SyntaxProvider
                 .ForAttributeWithMetadataName(
                     Templates.AttributeFullyQualified,
                     predicate: (node, _) => node is TypeDeclarationSyntax,
                     transform: (attributeSyntaxContext, _) => new AttributeContext(attributeSyntaxContext))
-                .WithTrackingName(TrackingNames.InitialExtraction);
+                .WithTrackingName(TrackingNames.FindAttributes);
+
+            var attributeContextsAndOptions = attributeContexts.Combine(options)
+                .WithTrackingName(TrackingNames.AttributesAndOptions);
 
             var attributesContextsAndMatchingEmbeddedResources = 
-                attributeContexts.Combine(context.AdditionalTextsProvider.Collect()).Combine(options)
-                    .Select(MatchAdditionalFiles)
-                    .WithTrackingName(TrackingNames.MatchAdditionalFiles);
+                attributeContextsAndOptions.Combine(context.AdditionalTextsProvider.Collect())
+                    .Select(ExtractEmbeddedResourceDocComments)
+                    .WithTrackingName(TrackingNames.EmbeddedResourceDocComments);
 
             var attributesWithFilesAndOptions = 
                 attributesContextsAndMatchingEmbeddedResources.Combine(options)
@@ -31,33 +35,32 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             context.RegisterSourceOutput(attributesWithFilesAndOptions,
                 (sourceProductionContext, attributeWithFilesAndOptions) =>
                 {
-                    var ((attributeContext, additionalTexts), generatorOptions) = attributeWithFilesAndOptions;
-                    GenerateFolderEmbed(sourceProductionContext, attributeContext, additionalTexts, generatorOptions);
+                    var ((attributeContext, embeddedResources), generatorOptions) = attributeWithFilesAndOptions;
+                    GenerateFolderEmbed(sourceProductionContext, attributeContext, embeddedResources, generatorOptions);
                 });
         }
 
-        private (AttributeContext AttributeContext, ImmutableArray<EmbeddedResource> AdditionalTexts)
-            MatchAdditionalFiles(
-                ((AttributeContext AttributeContext, ImmutableArray<AdditionalText> AdditionalTexts) AttributeContextAndAdditionalTexts,
-                    GeneratorOptions Options) attributeContextTextsAndOptions,
+        private (AttributeContext AttributeContext, ImmutableEquatableArray<EmbeddedResource> EmbeddedResources)
+            ExtractEmbeddedResourceDocComments(
+                ((AttributeContext AttributeContext, GeneratorOptions Options) AttributeContextAndOptions, 
+                    ImmutableArray<AdditionalText> AdditionalTexts) attributeContextOptionsAndAdditionalTexts,
                 CancellationToken ct)
         {
-            var attributeContext = attributeContextTextsAndOptions.AttributeContextAndAdditionalTexts.AttributeContext;
-            var additionalTexts = attributeContextTextsAndOptions.AttributeContextAndAdditionalTexts.AdditionalTexts;
-            var options = attributeContextTextsAndOptions.Options;
+            var attributeContext = attributeContextOptionsAndAdditionalTexts.AttributeContextAndOptions.AttributeContext;
+            var options = attributeContextOptionsAndAdditionalTexts.AttributeContextAndOptions.Options;
+            var additionalTexts = attributeContextOptionsAndAdditionalTexts.AdditionalTexts;
 
             var resourceSearchPath = GetResourceSearchPath(attributeContext, options);
 
-            var matchingAdditionalTexts = additionalTexts
+            var embeddedResources = additionalTexts
                 .Where(t => FileIsInMatchingFolder(t.Path, resourceSearchPath, attributeContext.ExtensionArg))
                 .Select(additionalText =>
                 {
                     var docCommentCode = AdditionalTextDocCommentCreator.GenerateDocCommentCode(additionalText, ct);
-                    return new EmbeddedResource(additionalText.Path, docCommentCode);
-                })
-                .ToImmutableArray();
+                    return new EmbeddedResource(additionalText.Path, docCommentCode!);
+                }).ToImmutableEquatableArray();
 
-            return (attributeContext, matchingAdditionalTexts);
+            return (attributeContext, embeddedResources);
         }
 
         private bool FileIsInMatchingFolder(string resourceFilePath, string resourceSearchPath, string extensionArg) =>
@@ -67,7 +70,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         private static void GenerateFolderEmbed(
             in SourceProductionContext context,
             in AttributeContext attributeContext,
-            ImmutableArray<EmbeddedResource> additionalTexts,
+            ImmutableEquatableArray<EmbeddedResource> embeddedResources,
             in GeneratorOptions options)
         {
             var cancellationToken = context.CancellationToken;
@@ -78,7 +81,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             var codeGenerator = new CodeGenerator(
                 attributeContext,
                 resourceSearchPath,
-                additionalTexts,
+                embeddedResources,
                 options,
                 cancellationToken);
 

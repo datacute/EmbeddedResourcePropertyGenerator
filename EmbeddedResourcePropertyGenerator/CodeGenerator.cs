@@ -1,7 +1,5 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Datacute.EmbeddedResourcePropertyGenerator
 {
@@ -9,13 +7,13 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     {
         public CodeGenerator(in AttributeContext context,
             string resourceSearchPath,
-            in ImmutableArray<EmbeddedResource> additionalTexts,
+            in ImmutableEquatableArray<EmbeddedResource> embeddedResources,
             in GeneratorOptions options,
             in CancellationToken cancellationToken)
         {
             _context = context;
             _resourceSearchPath = resourceSearchPath;
-            _additionalTexts = additionalTexts;
+            _embeddedResources = embeddedResources;
             _options = options;
             _cancellationToken = cancellationToken;
             _buffer = new StringBuilder();
@@ -24,7 +22,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         private readonly AttributeContext _context;
         private readonly string _resourceSearchPath;
-        private readonly ImmutableArray<EmbeddedResource> _additionalTexts;
+        private readonly ImmutableEquatableArray<EmbeddedResource> _embeddedResources;
         private readonly GeneratorOptions _options;
         private readonly StringBuilder _buffer;
         private readonly CancellationToken _cancellationToken;
@@ -47,7 +45,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             ResourceNames();
             AppendEndClass(4);
             AppendPartialMethods();
-            ProcessMatchingAdditionalFiles();
+            ProcessMatchingEmbeddedResources();
             AppendEndClass();
             return _buffer.ToString();
         }
@@ -55,7 +53,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         private void GeneratePropertyNames()
         {
             _propertyNames.Clear();
-            foreach (var text in _additionalTexts)
+            foreach (var text in _embeddedResources)
             {
                 _cancellationToken.ThrowIfCancellationRequested();
                 var resourceFilePath = text.Path;
@@ -193,7 +191,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         private void AppendPartialMethods() => _buffer.AppendLine(Templates.PartialMethods);
 
-        private void ProcessMatchingAdditionalFiles()
+        private void ProcessMatchingEmbeddedResources()
         {
             foreach (var kvp in _propertyNames)
             {
