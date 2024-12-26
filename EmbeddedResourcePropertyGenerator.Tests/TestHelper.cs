@@ -14,14 +14,8 @@ public static class TestHelper
     public static string TestPath(string path) => 
         Path.GetFullPath($"/EmbeddedResourcePropertyGenerator.Tests/Tests/{path}"
             .Replace('/', Path.DirectorySeparatorChar));
-    
-    public static (ImmutableArray<Diagnostic> Diagnostics, string[] Output) GetGeneratedOutput<TAttribute, TGenerator, TTrackingNames>(
-        List<AdditionalText>? additionalTexts, 
-        int indexOfAdditionalTextToModify,
-        string[] trackingNameChangesToIgnore,
-        params string[] sources)
-        where TAttribute : Attribute
-        where TGenerator : IIncrementalGenerator, new()
+
+    public static string[] GetTrackingNames<TTrackingNames>()
     {
         // get all the const string fields
         var trackingNames = typeof(TTrackingNames)
@@ -30,19 +24,32 @@ public static class TestHelper
             .Select(x => (string?)x.GetRawConstantValue()!)
             .Where(x => !string.IsNullOrEmpty(x))
             .ToArray();
+        return trackingNames;
+    }
 
+    public static (ImmutableArray<Diagnostic> Diagnostics, string[] Output1, string[] Output2)
+        GetGeneratedOutput<TAttribute, TGenerator>(
+            List<AdditionalText>? additionalTexts,
+            string[] trackingNamesToVerifyUnchanged,
+            Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)>? modificationBetweenRuns = null,
+            params string[] sources)
+        where TAttribute : Attribute
+        where TGenerator : IIncrementalGenerator, new()
+    {
         var compilation = GetCompilation<TAttribute, TGenerator>(sources);
 
         // Run the generator, get the results, and assert cacheability if applicable
-        GeneratorDriverRunResult runResult = RunGeneratorAndAssertOutput<TGenerator>(
-            additionalTexts, 
-            indexOfAdditionalTextToModify, 
-            compilation, 
-            trackingNames,
-            trackingNameChangesToIgnore);
+        (GeneratorDriverRunResult runResult1, GeneratorDriverRunResult runResult2) =
+            RunGeneratorAndAssertOutput<TGenerator>(
+                additionalTexts,
+                compilation,
+                trackingNamesToVerifyUnchanged,
+                modificationBetweenRuns);
 
         // Return the generator diagnostics and generated sources
-        return (runResult.Diagnostics, runResult.GeneratedTrees.Select(x => x.ToString()).ToArray());
+        return (runResult1.Diagnostics,
+            runResult1.GeneratedTrees.Select(x => x.ToString()).ToArray(),
+            runResult2.GeneratedTrees.Select(x => x.ToString()).ToArray());
     }
 
     private static CSharpCompilation GetCompilation<TAttribute, TGenerator>(params string[] sources)
@@ -59,24 +66,21 @@ public static class TestHelper
         var references = AppDomain.CurrentDomain.GetAssemblies()
             .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
             .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
-            .Concat(new[]
-            {
+            .Concat([
                 MetadataReference.CreateFromFile(typeof(TGenerator).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(TAttribute).Assembly.Location)
-            });
+            ]);
 
         // Create a Compilation object
         // You may want to specify other results here
         return CSharpCompilation.Create("Tests", syntaxTrees, references);
     }
 
-    private static GeneratorDriverRunResult RunGeneratorAndAssertOutput<TGenerator>(
+    private static (GeneratorDriverRunResult, GeneratorDriverRunResult) RunGeneratorAndAssertOutput<TGenerator>(
         List<AdditionalText>? additionalTexts,
-        int indexOfAdditionalTextToModify,
         CSharpCompilation compilation, 
-        string[] trackingNames, 
-        string[] trackingNameChangesToIgnore,
-        bool assertOutput = true)
+        string[] trackingNamesToVerifyUnchanged,
+        Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)>? modificationBetweenRuns = null)
         where TGenerator : IIncrementalGenerator, new()
     {
         var driver = GetDriver<TGenerator>(additionalTexts);
@@ -88,15 +92,10 @@ public static class TestHelper
         driver = driver.RunGenerators(compilation);
         var runResult = driver.GetRunResult();
 
-        if (!assertOutput) return runResult;
-
-        if (indexOfAdditionalTextToModify >= 0)
+        // If a modification between runs is specified, apply it
+        if (modificationBetweenRuns != null)
         {
-            if (additionalTexts?[indexOfAdditionalTextToModify] is InMemoryAdditionalText changingText)
-            {
-                var newText = new InMemoryAdditionalText(changingText.Path, "Changed content");
-                driver = driver.ReplaceAdditionalText(changingText, newText);
-            }
+            (driver, clone) = modificationBetweenRuns(driver, clone);
         }
 
         // Run with a clone of the compilation
@@ -104,18 +103,18 @@ public static class TestHelper
             .RunGenerators(clone)
             .GetRunResult();
 
-        AssertRunsEqual(runResult, runResult2, trackingNames, trackingNameChangesToIgnore);
+        AssertRunsEqual(runResult, runResult2, trackingNamesToVerifyUnchanged);
             
         // verify the second run only generated cached source outputs
         runResult2.Results[0]
             .TrackedOutputSteps
-            .Where(step => !trackingNameChangesToIgnore.Contains(step.Key))
+            .Where(step => trackingNamesToVerifyUnchanged.Contains(step.Key))
             .SelectMany(x => x.Value) // step executions
             .SelectMany(x => x.Outputs) // execution results
             .Should()
             .OnlyContain(x => x.Reason == IncrementalStepRunReason.Cached);
 
-        return runResult;
+        return (runResult, runResult2);
     }
 
     private static GeneratorDriver GetDriver<TGenerator>(List<AdditionalText>? additionalTexts)
@@ -136,12 +135,14 @@ public static class TestHelper
             driverOptions: generatorDriverOptions);
     }
 
-    private static void AssertRunsEqual(GeneratorDriverRunResult runResult1, GeneratorDriverRunResult runResult2,
-        string[] trackingNames, string[] trackingNameChangesToIgnore)
+    private static void AssertRunsEqual(
+        GeneratorDriverRunResult runResult1, 
+        GeneratorDriverRunResult runResult2,
+        string[] trackingNamesToVerifyUnchanged)
     {
         // We're given all the tracking names, but not all the stages have necessarily executed so filter
-        Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> trackedSteps1 = GetTrackedSteps(runResult1, trackingNames, trackingNameChangesToIgnore);
-        Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> trackedSteps2 = GetTrackedSteps(runResult2, trackingNames, trackingNameChangesToIgnore);
+        Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> trackedSteps1 = GetTrackedSteps(runResult1, trackingNamesToVerifyUnchanged);
+        Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> trackedSteps2 = GetTrackedSteps(runResult2, trackingNamesToVerifyUnchanged);
 
         // These should be the same
         trackedSteps1.Should()
@@ -160,12 +161,11 @@ public static class TestHelper
 
     private static Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> GetTrackedSteps(
         GeneratorDriverRunResult runResult, 
-        string[] trackingNames,
-        string[] trackingNameChangesToIgnore
+        string[] trackingNamesToVerifyUnchanged
         ) =>
         runResult.Results[0]
             .TrackedSteps
-            .Where(step => trackingNames.Contains(step.Key) && !trackingNameChangesToIgnore.Contains(step.Key))
+            .Where(step => trackingNamesToVerifyUnchanged.Contains(step.Key))
             .ToDictionary(x => x.Key, x => x.Value);
 
     private static void AssertEqual(
