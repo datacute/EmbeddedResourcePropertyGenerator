@@ -1,3 +1,5 @@
+[![Build](https://github.com/datacute/EmbeddedResourcePropertyGenerator/actions/workflows/ci.yml/badge.svg)](https://github.com/datacute/EmbeddedResourcePropertyGenerator/actions/workflows/ci.yml)
+
 # Embedded Resource Property Generator
 The Embedded Resource Property Generator is a Source Generator
 which generates properties for text file embedded resources in a
