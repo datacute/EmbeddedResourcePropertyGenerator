@@ -1,7 +1,7 @@
 [![Build](https://github.com/datacute/EmbeddedResourcePropertyGenerator/actions/workflows/ci.yml/badge.svg)](https://github.com/datacute/EmbeddedResourcePropertyGenerator/actions/workflows/ci.yml)
 
 # Embedded Resource Property Generator
-The Embedded Resource Property Generator is a Source Generator
+The Embedded Resource Property Generator is an Incremental Source Generator
 which generates properties for text file embedded resources in a
 project, in a similar way to how properties are generated from the string
 resources in .resx files.
@@ -52,16 +52,14 @@ of the resource files to another directory, without needing to find and
 fix all the references to the resource names.
 
 ## Usage
-1. Add a reference to the `EmbeddedResourcePropertyGenerator` project.
-2. Add the following section to your .csproj file, to include all 
-   EmbeddedResource files as Additional Files for the source generators:
-   ```xml
-     <PropertyGroup>
-       <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
-     </PropertyGroup>
-   ```
-3. Add a directory to your project to group the files you want to embed.
-4. Add text files to your project, in that directory, and set their Build
+
+1. Add the [Datacute.EmbeddedResourcePropertyGenerator NuGet package](https://www.nuget.org/packages/Datacute.EmbeddedResourcePropertyGenerator)
+to your project.
+    ```bash
+    dotnet add package Datacute.EmbeddedResourcePropertyGenerator
+    ```
+2. Add a directory to your project to group the files you want to embed.
+3. Add text files to your project, in that directory, and set their Build
    Action to `EmbeddedResource`.
     ```text
     > SqlQueries
@@ -75,11 +73,11 @@ fix all the references to the resource names.
         <EmbeddedResource Include="SqlQueries\SelectById.sql"/>
       </ItemGroup>
     ```
-5. Add a partial class to your code.
-6. Include a using statement to the namespace of the code generator.
-7. Put the attribute `[EmbeddedResourcePropertyGenerator]` on the class.
-8. Specify the extension and folder path to search for embedded resources.
-9. Use the properties generated on the partial class.
+4. Add a partial class to your code.
+5. Include a using statement to reference the `Datacute.EmbeddedResourcePropertyGenerator` namespace.
+6. Put the attribute `[EmbeddedResourceProperties]` on the class.
+7. Specify the extension and folder path to search for embedded resources.
+8. Use the properties generated on the partial class.
     ```csharp
     using Datacute.EmbeddedResourcePropertyGenerator;
     
@@ -95,6 +93,10 @@ fix all the references to the resource names.
     }
     ``` 
 
+Within your .csproj file, you can alter the `PackageReference` to include `PrivateAssets="all" ExcludeAssets="runtime"`
+This stops projects that reference this one from also getting a reference to this package, and stops the dll files
+from being copied to your build output.
+
 ## Localisation and External Overrides
 Localisation and External Overrides are not supported. If you need these
 features, consider using a resx file instead.
@@ -107,7 +109,6 @@ If you need to embed other types of files, use the
 `Assembly.GetManifestResourceStream` method directly.
 
 ## Extending the Behaviour
-
 The generated code includes a private nested class `EmbeddedResource` containing:
 
 | Method or Class | Purpose |
@@ -201,6 +202,42 @@ public static string Example
 }
 ```
 
+## Doc-comment Cache
+Any change in the IDE might result in the need for a change in the generated sources. To make this efficient,
+incremental source generators set up pipelines which extract just the information that they need,
+and pipelines only continue through to generating sources when there are changes to the collected information.
+
+In order to include doc-comments on properties, the embedded resource file needs to be read.
+
+Since embedded resources are different from source code, the source generators cannot tell whether the
+contents of the embedded resource file have changed, without reading the file.
+
+In order to avoid re-reading all the embedded resource files every time you make an edit in your source code,
+the source generator only reads the matching embedded resource files once,
+and caches the doc-comments for each matching file.
+
+The cache can be refreshed for the embedded resource files of an attribute,
+by temporarily enabling the `RegenerateDocCommentsWhileEditing` property on the attribute.
+
+```csharp
+[EmbeddedResourceProperties(".sql", "SqlQueries", RegenerateDocCommentsWhileEditing = true)]
+public static partial class SqlQuery;
+``` 
+
+Editing the attribute to set that property to true, should trigger the update of the doc-comments
+on the properties in that class, and then the property can be removed again.
+
+## Diagnostics
+The source generator traces its behaviour using https://github.com/datacute/LightweightTracing
+
+The trace log can be appended to the generated source files by setting the `DiagnosticTraceLog`
+property to true.
+
+```csharp
+[EmbeddedResourceProperties(".sql", "SqlQueries", DiagnosticTraceLog = true)]
+public static partial class SqlQuery;
+``` 
+
 ## Thanks
 
 Thanks to Andrew Lock for his Series: [Creating a source generator](https://andrewlock.net/series/creating-a-source-generator/).
@@ -225,3 +262,5 @@ Thanks to Andrew Lock for his Series: [Creating a source generator](https://andr
   - Using a resx file is probably a better fit that adding this feature.
 - [ ] Support generating `ReadOnlySpan<byte>` properties instead of `string`
   - The decoding from utf-8 may not be needed.
+- [ ] Make use of the `field` keyword when C# 14 or above is used.
+  - See https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-14#the-field-keyword
