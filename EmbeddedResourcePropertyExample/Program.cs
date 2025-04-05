@@ -75,7 +75,7 @@ static partial class SqlQueryOverrides
 
     // When no path is specified, the name of the class is used as the folder to search,
     // relative to the folder that this file is in.
-    // When the class is an inner class, none ot the parent class names are included
+    // When the class is an inner class, none of the parent class names are included
     // i.e. The directory searched will be "SqlQueries", not "SqlQueryOverrides.SqlQueries"
     [EmbeddedResourceProperties(".sql")]
     public static partial class SqlQueries
