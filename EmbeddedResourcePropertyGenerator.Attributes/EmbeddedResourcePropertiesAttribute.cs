@@ -1,11 +1,14 @@
 ﻿using System;
 
+// ReSharper disable UnusedParameter.Local
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
 namespace Datacute.EmbeddedResourcePropertyGenerator;
 
 /// <summary>
 /// Use a source generator to add properties to this class for each embedded resource file 
-/// with a filename matching the given <see cref="Extension"/>
-/// found in the given <see cref="Path"/>.
+/// with a filename matching the given <see cref="Extension">Extension</see>
+/// found in the given <see cref="Path">Path</see>.
 /// <para>
 /// If the path starts with "/" it is relative to the project root,
 /// otherwise it is relative to the folder containing the class with this attribute.
@@ -84,7 +87,7 @@ public sealed class EmbeddedResourcePropertiesAttribute : Attribute
 {
     /// <value>The filename extension of the embedded resource files
     /// to include as properties, defaulting to ".txt".</value>
-    public string Extension { get; private set; }
+    public string Extension { get; set; }
 
     /// <value>The path of the directory of embedded resource files
     /// to include as properties.</value>
@@ -93,15 +96,53 @@ public sealed class EmbeddedResourcePropertiesAttribute : Attribute
     /// otherwise it is relative to the folder containing the class with this attribute.
     /// If the path is not specified, the class name is used.
     /// </remarks>
-    public string? Path { get; private set; }
+    public string? Path { get; set; }
+    
+    /// <value>
+    /// Ignore the doc-comment cache and repeatedly read the embedded resource files to generate the doc-comments
+    /// </value>
+    /// <remarks>
+    /// To include doc-comments on properties, embedded resource file are read once and the doc-comments are cached.
+    /// The cache can be refreshed for embedded resource files matching this attributes path and extension,
+    /// by temporarily setting this property to true.
+    /// </remarks>
+    public bool RegenerateDocCommentsWhileEditing { get; set; }
+    
+    /// <value>
+    /// Output a diagnostic trace log as a comment at the end of the generated files
+    /// </value>
+    /// <remarks>
+    /// The log shows timestamps for each step of the Embedded Resource Property incremental source code generation process,
+    /// </remarks>
+    public bool DiagnosticTraceLog { get; set; }
 
-    public EmbeddedResourcePropertiesAttribute(string extension = ".txt", string? path = null)
+    /// <summary>
+    /// Use a source generator to add properties to this class for each embedded resource file 
+    /// found in the <see cref="Path">path</see> with the folder name the same as this class,
+    /// and where the file name's <see cref="Extension">extension</see> is ".txt"
+    /// </summary>
+    public EmbeddedResourcePropertiesAttribute() : this(".txt", null)
     {
-        Extension = extension;
-        Path = path;
     }
 
-    public EmbeddedResourcePropertiesAttribute(string extension = ".txt", string? path = null, bool regenerateDocCommentsWhileEditing = false)
+    /// <summary>
+    /// Use a source generator to add properties to this class for each embedded resource file 
+    /// found in the <see cref="Path">path</see> with the folder name the same as this class,
+    /// and where the file name's <see cref="Extension">extension</see> matches the given extension.
+    /// </summary>
+    /// <param name="extension">The file name extension to include</param>
+    public EmbeddedResourcePropertiesAttribute(string extension = ".txt") : this(extension, null)
+    {
+    }
+
+    /// <summary>
+    /// Use a source generator to add properties to this class for each embedded resource file 
+    /// found in the specified <see cref="Path">path</see>,
+    /// and where the file name's <see cref="Extension">extension</see> matches the given extension.
+    /// </summary>
+    /// <param name="extension">The file name extension to include</param>
+    /// <param name="path">The folder path to include</param>
+    public EmbeddedResourcePropertiesAttribute(string extension = ".txt", string? path = null)
     {
         Extension = extension;
         Path = path;
