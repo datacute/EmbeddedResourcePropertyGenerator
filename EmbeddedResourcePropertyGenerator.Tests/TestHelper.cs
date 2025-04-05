@@ -153,7 +153,7 @@ public static class TestHelper
 
         // These should be the same
         trackedSteps1.Count.ShouldBe(trackingNamesToVerifyUnchanged.Length);
-        trackedSteps1.Count.ShouldBe(trackedSteps2.Count());
+        trackedSteps1.Count.ShouldBe(trackedSteps2.Count);
 
         if (trackingNamesToVerifyUnchanged.Length > 0)
         {
