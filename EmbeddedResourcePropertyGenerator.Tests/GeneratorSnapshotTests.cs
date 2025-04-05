@@ -57,6 +57,39 @@ public class GeneratorSnapshotTests
     }
 
     [Fact]
+    public Task GeneratesEmbeddedResourcePropertiesForInnerAndGenericClasses()
+    {
+        // The source code to test
+        var source = /* language=c# */
+            """
+            using Datacute.EmbeddedResourcePropertyGenerator;
+
+            public static partial class OuterClass<T>
+            {
+                [EmbeddedResourceProperties(Extension = ".txt")]
+                public static partial class InnerClass;
+            }
+            """;
+
+        // Create a list to hold all additional texts
+        var additionalTexts = new List<AdditionalText>
+        {
+            new InMemoryAdditionalText(
+                TestHelper.TestPath("InnerClass/example.txt"),
+                "Example text content"),
+            new InMemoryAdditionalText(
+                TestHelper.TestPath("InnerClass/example2.file"),
+                "Example text content with the wrong extension - should not be included"),
+            new InMemoryAdditionalText(
+                TestHelper.TestPath("WrongFolder/example3.txt"),
+                "Example text content in the wrong folder - should not be included")
+        };
+
+        // Pass the source code to our helper and snapshot test the output
+        return Verify(source, additionalTexts);
+    }
+
+    [Fact]
     public Task AlternateFolderSelectedCorrectly()
     {
         // The source code to test

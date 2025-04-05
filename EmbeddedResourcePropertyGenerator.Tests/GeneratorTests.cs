@@ -340,7 +340,7 @@ public class GeneratorTests
                            }
                            static partial void ReadEmbeddedResourceValue(ref string? backingField, string resourceName, string propertyName);
                            static partial void AlterEmbeddedResourceReturnValue(ref string value, string resourceName, string propertyName);
-                               public static string Example => "Design Time";
+                           public static string Example => "Design Time";
                        }
 
                        """;

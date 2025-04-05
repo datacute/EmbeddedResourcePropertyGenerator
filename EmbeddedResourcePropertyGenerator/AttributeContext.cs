@@ -14,10 +14,21 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         public readonly bool ContainingNamespaceIsGlobalNamespace;
         public readonly string ContainingNamespaceDisplayString;
 
+        // Store parent classes with their modifiers
+        public record struct ParentClassInfo(
+            string Name, 
+            bool IsStatic, 
+            Accessibility Accessibility,
+            string RecordStructOrClass,
+            string[] TypeParameters);
+        public readonly ParentClassInfo[] ParentClasses { get; }
+        public bool HasParentClasses => ParentClasses.Length > 0;
+
         public readonly Accessibility DeclaredAccessibility; // public
         public readonly bool IsStatic;                       // static
         public readonly string RecordStructOrClass;          // (partial) class
         public readonly string Name;                         // ClassName
+        public readonly string[] TypeParameters;               // <T, U>
         public readonly string DisplayString;                // Namespace.ClassName
 
         public AttributeContext(in GeneratorAttributeSyntaxContext generatorAttributeSyntaxContext)
@@ -78,7 +89,35 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             IsStatic = attributeTargetSymbol.IsStatic;
             RecordStructOrClass = GetRecordStructOrClass(attributeTargetSymbol);
             Name = attributeTargetSymbol.Name;
+
+            if (generatorAttributeSyntaxContext.TargetSymbol is INamedTypeSymbol namedTypeTargetSymbol)
+            {
+                TypeParameters = namedTypeTargetSymbol.TypeParameters.Select(tp => tp.Name).ToArray();
+            }
+            else
+            {
+                TypeParameters = Array.Empty<string>();
+            }
+
             DisplayString = attributeTargetSymbol.ToDisplayString();
+        
+            // Parse parent classes from symbol's containing types
+            var parentClasses = new List<ParentClassInfo>();
+            var containingType = attributeTargetSymbol.ContainingType;
+            while (containingType != null)
+            {
+                var typeParams = containingType.TypeParameters.Select(tp => tp.Name).ToArray();
+            
+                parentClasses.Insert(0, new ParentClassInfo(
+                    containingType.Name, 
+                    containingType.IsStatic,
+                    containingType.DeclaredAccessibility,
+                    GetRecordStructOrClass(containingType),
+                    typeParams));
+                containingType = containingType.ContainingType;
+            }
+
+            ParentClasses = parentClasses.ToArray();
         }
 
         private static string GetRecordStructOrClass(ITypeSymbol typeSymbol)

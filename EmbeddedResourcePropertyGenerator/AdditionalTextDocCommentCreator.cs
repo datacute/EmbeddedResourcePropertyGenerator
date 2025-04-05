@@ -29,14 +29,14 @@ public static class AdditionalTextDocCommentCreator
             {
                 var moreLines = $"... {lineCount - outputLines} more lines";
                 sb.AppendLine()
-                    .Append("    /// ").Append(moreLines);
+                    .Append("/// ").Append(moreLines);
                 break;
             }
 
             var textString = textLine.ToString();
             var escapedLine = EscapeStringForDocComments(textString);
             sb.AppendLine()
-                .Append("    /// ").Append(escapedLine);
+                .Append("/// ").Append(escapedLine);
             outputLines++;
         }
 

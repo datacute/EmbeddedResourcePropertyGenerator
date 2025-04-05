@@ -32,6 +32,14 @@ Console.WriteLine("Second call, the backing field already has a value:");
 Console.WriteLine(SqlQueryOverrides.SelectAll);
 Console.WriteLine();
 
+Console.WriteLine("Example of using the attribute in an inner class:");
+Console.WriteLine("First call, the backing field value will be set:");
+Console.WriteLine(SqlQueryOverrides.SqlQueries.SelectAll);
+Console.WriteLine();
+Console.WriteLine("Second call, the backing field already has a value:");
+Console.WriteLine(SqlQueryOverrides.SqlQueries.SelectAll);
+Console.WriteLine();
+
 
 [EmbeddedResourceProperties(Extension = ".sql", Path = "SqlQueries")]
 static partial class SqlQuery;
@@ -63,6 +71,15 @@ static partial class SqlQueryOverrides
             // seeing if a file exists in a directory, and if so, reading it instead.
             backingField = "SELECT * FROM NewCustomersView;";
         }
+    }
+
+    // When no path is specified, the name of the class is used as the folder to search,
+    // relative to the folder that this file is in.
+    // When the class is an inner class, none ot the parent class names are included
+    // i.e. The directory searched will be "SqlQueries", not "SqlQueryOverrides.SqlQueries"
+    [EmbeddedResourceProperties(".sql")]
+    public static partial class SqlQueries
+    {
     }
 }
 
