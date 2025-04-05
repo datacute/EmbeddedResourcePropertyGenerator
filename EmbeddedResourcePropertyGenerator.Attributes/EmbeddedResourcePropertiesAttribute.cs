@@ -17,16 +17,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Source generators only have access to <c>AdditionalFiles</c>.
-/// All <c>EmbeddedResource</c> files can be automatically included as <c>AdditionalFiles</c>
-/// by including the following line in the project file:
-/// <code>
-/// &lt;ItemGroup&gt;
-///     &lt;AdditionalFileItemNames&gt;$(AdditionalFileItemNames);EmbeddedResource&lt;/AdditionalFileItemNames&gt;
-/// &lt;/ItemGroup&gt;
-/// </code>
-/// </para>
-/// <para>
 /// The generated code includes a private nested class <c>EmbeddedResource</c> containing:
 /// <list type="table">
 /// <listheader><term>Method or Class</term><description>Purpose</description></listheader>
