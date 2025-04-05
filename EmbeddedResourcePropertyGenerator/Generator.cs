@@ -11,16 +11,18 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var options = context.AnalyzerConfigOptionsProvider
-                .Select(GeneratorOptions.Select)
-                .WithTrackingName(TrackingNames.OptionGeneration);
-
+            LightweightTrace.Add(TrackingNames.Generator_Initialize);
+            
             var attributeContexts = context.SyntaxProvider
                 .ForAttributeWithMetadataName(
                     Templates.AttributeFullyQualified,
                     predicate: (node, _) => node is TypeDeclarationSyntax,
                     transform: (attributeSyntaxContext, _) => new AttributeContext(attributeSyntaxContext))
                 .WithTrackingName(TrackingNames.FindAttributes);
+
+            var options = context.AnalyzerConfigOptionsProvider
+                .Select(GeneratorOptions.Select)
+                .WithTrackingName(TrackingNames.OptionGeneration);
 
             var attributeContextsAndOptions = attributeContexts.Combine(options)
                 .WithTrackingName(TrackingNames.AttributesAndOptions);
@@ -37,6 +39,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             context.RegisterSourceOutput(attributesWithFilesAndOptions,
                 (sourceProductionContext, attributeWithFilesAndOptions) =>
                 {
+                    LightweightTrace.Add(TrackingNames.Generator_Action);
+
                     var ((attributeContext, embeddedResources), generatorOptions) = attributeWithFilesAndOptions;
                     GenerateFolderEmbed(sourceProductionContext, attributeContext, embeddedResources, generatorOptions);
                 });
@@ -48,6 +52,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                     ImmutableArray<AdditionalText> AdditionalTexts) attributeContextOptionsAndAdditionalTexts,
                 CancellationToken ct)
         {
+            LightweightTrace.Add(TrackingNames.DocComment_Select);
+
             var attributeContext = attributeContextOptionsAndAdditionalTexts.AttributeContextAndOptions.AttributeContext;
             var options = attributeContextOptionsAndAdditionalTexts.AttributeContextAndOptions.Options;
             var additionalTexts = attributeContextOptionsAndAdditionalTexts.AdditionalTexts;
@@ -85,6 +91,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
             if (attributeContext.TriggerDocCommentCacheRebuildArg || !_embeddedResourceCache.TryGetValue(additionalText.Path, out var embeddedResource))
             {
+                LightweightTrace.Add(TrackingNames.DocComment_Generate);
+
                 // This is the first time we've seen this file, so read the file and generate the doc comments
                 var docCommentCode = AdditionalTextDocCommentCreator.GenerateDocCommentCode(additionalText, ct);
                 embeddedResource = new EmbeddedResource(additionalText.Path, docCommentCode);

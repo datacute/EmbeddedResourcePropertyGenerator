@@ -33,7 +33,7 @@ Console.WriteLine(SqlQueryOverrides.SelectAll);
 Console.WriteLine();
 
 
-[EmbeddedResourceProperties(".sql", "SqlQueries")]
+[EmbeddedResourceProperties(Extension = ".sql", Path = "SqlQueries")]
 static partial class SqlQuery;
 
 
@@ -65,3 +65,9 @@ static partial class SqlQueryOverrides
         }
     }
 }
+
+[EmbeddedResourceProperties] // there are no matching ".txt" files
+static partial class SqlQueries;
+
+[EmbeddedResourceProperties(".NoMatch", DiagnosticTraceLog = true)]
+static partial class JustShowTheDiagnosticsLog;

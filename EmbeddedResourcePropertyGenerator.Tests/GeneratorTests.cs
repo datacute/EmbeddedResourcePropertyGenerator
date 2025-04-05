@@ -12,7 +12,7 @@ public class GeneratorTests
           using Datacute.EmbeddedResourcePropertyGenerator;
           namespace {{TestHelper.TestNamespace}}
           {
-              [EmbeddedResourceProperties(".txt", "Queries", regenerateDocCommentsWhileEditing: true)] // Ignore the cache
+              [EmbeddedResourceProperties(".txt", "Queries", RegenerateDocCommentsWhileEditing = true, DiagnosticTraceLog = false)] // Ignore the cache
               public static partial class Queries;
           }
           """;
@@ -255,7 +255,7 @@ public class GeneratorTests
 
                     return (driver, compilation);
                 },
-                InputSource.Replace(", regenerateDocCommentsWhileEditing: true", "")); // Change the attribute to not ignore the cache
+                InputSource.Replace(", RegenerateDocCommentsWhileEditing = true", "")); // Change the attribute to not ignore the cache
 
         // Assert the output
         using var s = new AssertionScope();

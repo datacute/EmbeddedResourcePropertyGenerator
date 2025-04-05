@@ -6,7 +6,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     {
         public readonly string ExtensionArg;
         public readonly string PathArg;
-        public readonly bool TriggerDocCommentCacheRebuildArg;
+        public readonly bool TriggerDocCommentCacheRebuildArg = false;
+        public readonly bool OutputDiagnosticTraceLog = false;
 
         public readonly string FilePath;
 
@@ -21,6 +22,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         public AttributeContext(in GeneratorAttributeSyntaxContext generatorAttributeSyntaxContext)
         {
+            LightweightTrace.Add(TrackingNames.AttributeContext_Transform);
+            
             var attributeTargetSymbol = (ITypeSymbol)generatorAttributeSyntaxContext.TargetSymbol;
 
             //todo support multiple attributes
@@ -28,22 +31,40 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             var args = attributeData.ConstructorArguments;
             ExtensionArg = (args.Length == 0 ? null : args[0].Value as string) ?? ".txt";
             PathArg = (args.Length < 2 ? null : args[1].Value as string) ?? attributeTargetSymbol.Name;
-            TriggerDocCommentCacheRebuildArg =  
-                args.Length >= 3 && 
-                args[2].Value is bool && 
-                (bool)(args[2].Value ?? false);
-            // override with named arguments
             if (!attributeData.NamedArguments.IsEmpty)
             {
                 foreach (KeyValuePair<string, TypedConstant> namedArgument in attributeData.NamedArguments)
                 {
-                    var e = namedArgument.Value.Value?.ToString();
-                    if (namedArgument.Key == "Extension" && e != null)
-                        ExtensionArg = e;
-                    else
+                    var value = namedArgument.Value.Value;
+                    if (value != null)
                     {
-                        var p = namedArgument.Value.Value?.ToString();
-                        if (namedArgument.Key == "Path" && p != null) PathArg = p;
+                        switch (value)
+                        {
+                            case bool boolValue:
+                                switch (namedArgument.Key)
+                                {
+                                    case "RegenerateDocCommentsWhileEditing":
+                                        TriggerDocCommentCacheRebuildArg = boolValue;
+                                        break;
+                                    case "DiagnosticTraceLog":
+                                        OutputDiagnosticTraceLog = boolValue;
+                                        break;
+                                }
+
+                                break;
+                            case string stringValue:
+                                switch (namedArgument.Key)
+                                {
+                                    case "Extension":
+                                        ExtensionArg = stringValue;
+                                        break;
+                                    case "Path":
+                                        PathArg = stringValue;
+                                        break;
+                                }
+
+                                break;
+                        }
                     }
                 }
             }

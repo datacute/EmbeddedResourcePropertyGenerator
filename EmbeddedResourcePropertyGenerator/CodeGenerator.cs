@@ -47,6 +47,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             AppendPartialMethods();
             ProcessMatchingEmbeddedResources();
             AppendEndClass();
+
+            AppendDiagnosticLogs();
             return _buffer.ToString();
         }
 
@@ -226,6 +228,18 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         {
             _buffer.Append(' ', indent);
             _buffer.AppendLine("}");
+        }
+
+        private void AppendDiagnosticLogs()
+        {
+            if (_context.OutputDiagnosticTraceLog)
+            {
+                _buffer.AppendLine();
+                _buffer.AppendLine("/* Diagnostic Trace Log");
+                LightweightTrace.Add(TrackingNames.DiagnosticTraceLog_Written);
+                LightweightTrace.GetTrace(_buffer, TrackingNames.TracingNames);
+                _buffer.AppendLine("*/");
+            }
         }
     }
 }

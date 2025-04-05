@@ -19,6 +19,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         public static GeneratorOptions Select(AnalyzerConfigOptionsProvider provider, CancellationToken token)
         {
+            LightweightTrace.Add(TrackingNames.AnalyzerConfigOptionsDescription_Select);
+
             token.ThrowIfCancellationRequested();
             return new GeneratorOptions(provider.GlobalOptions);
         }
