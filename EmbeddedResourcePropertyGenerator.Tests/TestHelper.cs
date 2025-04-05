@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Immutable;
 using System.Reflection;
-using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Shouldly;
 
 namespace EmbeddedResourcePropertyGenerator.Tests;
 
@@ -119,8 +119,7 @@ public static class TestHelper
             .Where(step => trackingNamesToVerifyUnchanged.Contains(step.Key))
             .SelectMany(x => x.Value) // step executions
             .SelectMany(x => x.Outputs) // execution results
-            .Should()
-            .OnlyContain(x => x.Reason == IncrementalStepRunReason.Cached);
+            .ShouldAllBe(x => x.Reason == IncrementalStepRunReason.Cached);
 
         return (runResult, runResult2);
     }
@@ -153,14 +152,12 @@ public static class TestHelper
         Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> trackedSteps2 = GetTrackedSteps(runResult2, trackingNamesToVerifyUnchanged);
 
         // These should be the same
-        trackedSteps1.Should()
-            .HaveSameCount(trackingNamesToVerifyUnchanged)
-            .And.HaveSameCount(trackedSteps2);
+        trackedSteps1.Count.ShouldBe(trackingNamesToVerifyUnchanged.Length);
+        trackedSteps1.Count.ShouldBe(trackedSteps2.Count());
 
         if (trackingNamesToVerifyUnchanged.Length > 0)
         {
-            trackedSteps1.Should()
-                .ContainKeys(trackedSteps2.Keys);
+            trackedSteps1.Keys.ShouldBeEquivalentTo(trackedSteps2.Keys);
         }
 
         foreach (var trackedStep in trackedSteps1)
@@ -186,7 +183,7 @@ public static class TestHelper
         ImmutableArray<IncrementalGeneratorRunStep> runSteps2,
         string stepName)
     {
-        runSteps1.Should().HaveSameCount(runSteps2);
+        runSteps1.Length.ShouldBe(runSteps2.Length);
 
         for (var i = 0; i < runSteps1.Length; i++)
         {
@@ -197,14 +194,12 @@ public static class TestHelper
             IEnumerable<object> outputs1 = runStep1.Outputs.Select(x => x.Value);
             IEnumerable<object> outputs2 = runStep2.Outputs.Select(x => x.Value);
 
-            outputs1.Should()
-                .Equal(outputs2, $"because {stepName} should produce cacheable outputs");
+            outputs1.ShouldBeEquivalentTo(outputs2, $"because {stepName} should produce cacheable outputs");
 
             // Therefore, on the second run the results should always be cached or unchanged!
             // - Unchanged is when the input has changed, but the output hasn't
             // - Cached is when the input has not changed, so the cached output is used 
-            runStep2.Outputs.Should()
-                .OnlyContain(
+            runStep2.Outputs.ShouldAllBe(
                     x => x.Reason == IncrementalStepRunReason.Cached || x.Reason == IncrementalStepRunReason.Unchanged,
                     $"{stepName} expected to have reason {IncrementalStepRunReason.Cached} or {IncrementalStepRunReason.Unchanged}");
 
@@ -230,10 +225,9 @@ public static class TestHelper
                     return;
                 }
 
-                node.Should()
-                    .NotBeOfType<Compilation>(because)
-                    .And.NotBeOfType<ISymbol>(because)
-                    .And.NotBeOfType<SyntaxNode>(because);
+                node.ShouldNotBeOfType<Compilation>(because);
+                node.ShouldNotBeOfType<ISymbol>(because);
+                node.ShouldNotBeOfType<SyntaxNode>(because);
 
                 Type type = node.GetType();
                 if (type.IsPrimitive || type.IsEnum || type == typeof(string))
