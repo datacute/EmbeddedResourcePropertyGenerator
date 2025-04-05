@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <!-- Include all EmbeddedResource files as Additional Files for the source generators -->
+        <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
+    </PropertyGroup>
+</Project>
