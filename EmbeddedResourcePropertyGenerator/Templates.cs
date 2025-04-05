@@ -17,82 +17,78 @@
 ";
 
         public const string StartEmbeddedResourceClass = /* language=c# */
-            @"    private static class EmbeddedResource
-    {";
+            "private static class EmbeddedResource";
 
         public const string ReadMethod = /* language=c# */
-            @"        public static string Read(string resourceName)
-        {{
-            var assembly = typeof({0}).Assembly;
-            using var stream = assembly.GetManifestResourceStream(resourceName)!;
-            using var streamReader = new global::System.IO.StreamReader(stream, global::System.Text.Encoding.UTF8);
-            var resourceText = streamReader.ReadToEnd();
-            return resourceText;
-        }}
+            @"{0}public static string Read(string resourceName)
+{0}{{
+{0}{1}var assembly = typeof({2}).Assembly;
+{0}{1}using var stream = assembly.GetManifestResourceStream(resourceName)!;
+{0}{1}using var streamReader = new global::System.IO.StreamReader(stream, global::System.Text.Encoding.UTF8);
+{0}{1}var resourceText = streamReader.ReadToEnd();
+{0}{1}return resourceText;
+{0}}}
 ";
 
         public const string BackingFieldClass = /* language=c# */
-            @"        public static class BackingField
-        {";
+            "public static class BackingField";
 
         public const string BackingField = /* language=c# */
-            @"            public static string? {0};
-";
+            "{0}public static string? {1};";
 
         public const string ResourceNameClass = /* language=c# */
-            @"        public static class ResourceName
-        {";
+            "public static class ResourceName";
 
         public const string ResourceName = /* language=c# */
-            @"            public const string {0} = ""{1}"";
+            @"{0}public const string {1} = ""{2}"";
 ";
 
         public const string ClassDocComments = /* language=c# */
-            @"/// <summary>
-/// This class's properties are generated from project files meeting the criteria:
-/// <list type=""bullet"">
-/// <item>
-/// <description>they are both an <c>EmbeddedResource</c> and an <c>AdditionalFile</c></description>
-/// </item>
-/// <item>
-/// <description>they are in the project folder <c>{0}</c></description>
-/// </item>
-/// <item>
-/// <description>they have the extension <c>{1}</c></description>
-/// </item>
-/// </list>
-/// </summary>
+            @"{0}/// <summary>
+{0}/// This class's properties are generated from project files meeting the criteria:
+{0}/// <list type=""bullet"">
+{0}/// <item>
+{0}/// <description>they are both an <c>EmbeddedResource</c> and an <c>AdditionalFile</c></description>
+{0}/// </item>
+{0}/// <item>
+{0}/// <description>they are in the project folder <c>{1}</c></description>
+{0}/// </item>
+{0}/// <item>
+{0}/// <description>they have the extension <c>{2}</c></description>
+{0}/// </item>
+{0}/// </list>
+{0}/// </summary>
 ";
 
-        public const string PartialMethods = /* language=c# */
-            @"    static partial void ReadEmbeddedResourceValue(ref string? backingField, string resourceName, string propertyName);
-    static partial void AlterEmbeddedResourceReturnValue(ref string value, string resourceName, string propertyName);";
+        public const string PartialReadMethods = /* language=c# */
+            "static partial void ReadEmbeddedResourceValue(ref string? backingField, string resourceName, string propertyName);";
+
+        public const string PartialAlterMethods = /* language=c# */
+            "static partial void AlterEmbeddedResourceReturnValue(ref string value, string resourceName, string propertyName);";
 
         public const string PropertyTemplate = /* language=c# */
             @"
-    /// <summary>Text value of the Embedded Resource: {1}</summary>
-    /// <value>
-    /// <code>{2}
-    /// </code>
-    /// </value>
-    /// <remarks>
-    /// The value is read from the embedded resource on first access.
-    /// </remarks>
-    public static string {0}
-    {{
-        get
-        {{
-            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.{0}, EmbeddedResource.ResourceName.{0}, ""{0}"");
-            var value = EmbeddedResource.BackingField.{0} ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.{0});
-            AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.{0}, ""{0}"");
-            return value;
-        }}
-    }}
+{0}/// <summary>Text value of the Embedded Resource: {3}</summary>
+{0}/// <value>
+{0}/// <code>{4}
+{0}/// </code>
+{0}/// </value>
+{0}/// <remarks>
+{0}/// The value is read from the embedded resource on first access.
+{0}/// </remarks>
+{0}public static string {2}
+{0}{{
+{0}{1}get
+{0}{1}{{
+{0}{1}{1}ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.{2}, EmbeddedResource.ResourceName.{2}, ""{2}"");
+{0}{1}{1}var value = EmbeddedResource.BackingField.{2} ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.{2});
+{0}{1}{1}AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.{2}, ""{2}"");
+{0}{1}{1}return value;
+{0}{1}}}
+{0}}}
 ";
 
         public const string DesignTimePropertyTemplate = /* language=c# */
-            @"        public static string {0} => ""Design Time"";
-";
-
+            @"public static string {0} => ""Design Time"";";
     }
 }
