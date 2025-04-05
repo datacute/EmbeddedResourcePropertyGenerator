@@ -29,25 +29,23 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
         <!-- Pack the generator dll in the analyzers/dotnet/cs path -->
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
-        <!-- Pack the attributes dll in the analyzers/dotnet/cs path -->
-        <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-
         <!-- Pack the attributes dll in the lib\netstandard2.0 path -->
         <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="true" />
         <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.xml" Pack="true" PackagePath="lib\netstandard2.0" Visible="true" />
 
-        <None Include="../README.md" Pack="true" PackagePath="\" />
+        <None Include="./Datacute.EmbeddedResourcePropertyGenerator.props" Pack="true" PackagePath="build" Visible="true" />
+
+        <None Include="../README.md" Pack="true" PackagePath="" Visible="false" />
     </ItemGroup>
-    
+
     <ItemGroup>
-      <ProjectReference Include="..\EmbeddedResourcePropertyGenerator.Attributes\EmbeddedResourcePropertyGenerator.Attributes.csproj" PrivateAssets="All" />
+        <ProjectReference Include="..\EmbeddedResourcePropertyGenerator.Attributes\EmbeddedResourcePropertyGenerator.Attributes.csproj" PrivateAssets="All" />
     </ItemGroup>
 </Project>
