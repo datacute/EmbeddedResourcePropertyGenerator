@@ -202,33 +202,8 @@ public static string Example
 }
 ```
 
-## Doc-comment Cache
-Any change in the IDE might result in the need for a change in the generated sources. To make this efficient,
-incremental source generators set up pipelines which extract just the information that they need,
-and pipelines only continue through to generating sources when there are changes to the collected information.
-
-In order to include doc-comments on properties, the embedded resource file needs to be read.
-
-Since embedded resources are different from source code, the source generators cannot tell whether the
-contents of the embedded resource file have changed, without reading the file.
-
-In order to avoid re-reading all the embedded resource files every time you make an edit in your source code,
-the source generator only reads the matching embedded resource files once,
-and caches the doc-comments for each matching file.
-
-The cache can be refreshed for the embedded resource files of an attribute,
-by temporarily enabling the `RegenerateDocCommentsWhileEditing` property on the attribute.
-
-```csharp
-[EmbeddedResourceProperties(".sql", "SqlQueries", RegenerateDocCommentsWhileEditing = true)]
-public static partial class SqlQuery;
-``` 
-
-Editing the attribute to set that property to true, should trigger the update of the doc-comments
-on the properties in that class, and then the property can be removed again.
-
 ## Diagnostics
-The source generator traces its behaviour using https://github.com/datacute/LightweightTracing
+The source generator traces its behaviour using code based on https://github.com/datacute/LightweightTracing
 
 The trace log can be appended to the generated source files by setting the `DiagnosticTraceLog`
 property to true.
