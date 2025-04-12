@@ -1,39 +1,56 @@
 ﻿namespace Datacute.EmbeddedResourcePropertyGenerator
 {
-    public class TrackingNames
+    public enum TrackingNames
     {
-        public const string OptionGeneration = nameof(OptionGeneration);
-        public const string FindAttributes = nameof(FindAttributes);
-        public const string AttributesAndOptions = nameof(AttributesAndOptions);
-        public const string EmbeddedResourceDocComments = nameof(EmbeddedResourceDocComments);
-        public const string Combine = nameof(Combine);
+        GeneratorInitialized = 0,
+        Cancel = 1,
+
+        AnalyzerConfigOptions = 10,
+        AdditionalTextAndPaths = 20,
+        AttributeChange = 31,
+        CombineAttributesAndOptions = 32,
+        SelectAttributesAndGlobs = 33,
+        JustTheGlobs = 34,
+        AdditionalTextPathsAndGlobs = 41,
+        AdditionalTextMatches = 42,
+        GeneratingDocComment = 43,
+        AdditionalTextGlobsAndEmbeddedResource = 44,
+        AdditionalTextPathsAndGlobsEmbeddedResourcesAndAttributes = 45,
+        ReduceToMatchingContexts = 46,
+        AdditionalTextEmbeddedResourcesAndMatchingAttributes = 47,
+        CombineOptionsWithAdditionalTextsEmbeddedResourceAndMatchingAttributes = 50,
+        CombineOptionsAdditionalTextsEmbeddedResourceAndMatchingAttributesWithAttributes = 61,
+        GroupByAttribute = 62,
+        AttributeEmbeddedResourceAndOptions = 70,
+        GeneratingSourceFile = 81,
+        DiagnosticTraceLogWritten = 82
+    }
     
-        public const int Generator_Initialize = 0;
-        public const int AttributeContext_Transform = 1;
-        public const int AnalyzerConfigOptionsDescription_Select = 2;
-        public const int CompilationDescription_Select = 3;
-        public const int ParseOptionsDescription_Select = 4;
-        public const int AdditionalTextDescription_Select = 5;
-        public const int MetadataReferenceDescription_Select = 6;
-        public const int Generator_Action = 7;
-        public const int DiagnosticTraceLog_Written = 8;
-
-        public const int DocComment_Select = 9;
-        public const int DocComment_Generate = 10;
-
-        public static readonly Dictionary<int, string> TracingNames = new()
+    public class TrackingNameDescriptions
+    {
+        public static readonly Dictionary<int, string> EventNameMap = new()
         {
-            { Generator_Initialize, nameof(Generator_Initialize) },
-            { AttributeContext_Transform, nameof(AttributeContext_Transform) },
-            { AnalyzerConfigOptionsDescription_Select, nameof(AnalyzerConfigOptionsDescription_Select) },
-            { CompilationDescription_Select, nameof(CompilationDescription_Select) },
-            { ParseOptionsDescription_Select, nameof(ParseOptionsDescription_Select) },
-            { AdditionalTextDescription_Select, nameof(AdditionalTextDescription_Select) },
-            { MetadataReferenceDescription_Select, nameof(MetadataReferenceDescription_Select) },
-            { Generator_Action, nameof(Generator_Action) },
-            { DiagnosticTraceLog_Written, nameof(DiagnosticTraceLog_Written) },
-            { DocComment_Select, nameof(DocComment_Select) },
-            { DocComment_Generate, nameof(DocComment_Generate) },
-        };        
+            { (int)TrackingNames.GeneratorInitialized, " Generator Initialized" },
+            { (int)TrackingNames.AnalyzerConfigOptions, "new AnalyzerConfigOptions" },
+            { (int)TrackingNames.AdditionalTextAndPaths, "new Additional Text and Paths (Directory and Extension)" },
+            { (int)TrackingNames.AttributeChange, "new Attribute" },
+            { (int)TrackingNames.CombineAttributesAndOptions, "new Combination of Attributes and Options" },
+            { (int)TrackingNames.SelectAttributesAndGlobs, "new Selection of Attributes and Globs" },
+            { (int)TrackingNames.JustTheGlobs, "new Glob" },
+            { (int)TrackingNames.AdditionalTextPathsAndGlobs, "new Selection of Additional Texts, Paths, and Globs" },
+            { (int)TrackingNames.AdditionalTextMatches, "new AdditionalText Matches to Globs" },
+            { (int)TrackingNames.GeneratingDocComment, "** Generating doc-comment for Additional Texts **" },
+            { (int)TrackingNames.AdditionalTextGlobsAndEmbeddedResource, "new AdditionalText, Globs, and EmbeddedResource" },
+            { (int)TrackingNames.AdditionalTextPathsAndGlobsEmbeddedResourcesAndAttributes, "new AdditionalText, Paths and Globs, EmbeddedResources, and Attributes" },
+            { (int)TrackingNames.ReduceToMatchingContexts, "Reduce to matching Contexts" },
+            { (int)TrackingNames.AdditionalTextEmbeddedResourcesAndMatchingAttributes, "new AdditionalText, EmbeddedResources, and matching Attributes" },
+            { (int)TrackingNames.CombineOptionsWithAdditionalTextsEmbeddedResourceAndMatchingAttributes, "new Combination of Options with AdditionalTexts, EmbeddedResource, and matching Attributes" },
+            { (int)TrackingNames.CombineOptionsAdditionalTextsEmbeddedResourceAndMatchingAttributesWithAttributes, "new Combination of Options with AdditionalTexts, EmbeddedResource, and matching Attributes with all Attributes" },
+            { (int)TrackingNames.GroupByAttribute, "Group By Attribute" },
+            { (int)TrackingNames.AttributeEmbeddedResourceAndOptions, "new Attribute, EmbeddedResource, and Options" },
+            { (int)TrackingNames.GeneratingSourceFile, "Generating Source File" },
+            { (int)TrackingNames.DiagnosticTraceLogWritten, "Diagnostic Trace Log Written" },
+            { (int)TrackingNames.Cancel, "Cancel" },
+        };
     }
 }

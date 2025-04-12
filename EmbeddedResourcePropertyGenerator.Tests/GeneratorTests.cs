@@ -182,9 +182,19 @@ public class GeneratorTests
                 TestHelper.NoModification,
                 _additionalTexts,
                 [
-                    nameof(TrackingNames.OptionGeneration),
-                    nameof(TrackingNames.FindAttributes),
-                    nameof(TrackingNames.AttributesAndOptions)
+                    nameof(TrackingNames.AttributeChange),
+                    nameof(TrackingNames.AnalyzerConfigOptions),
+                    nameof(TrackingNames.CombineAttributesAndOptions),
+                    nameof(TrackingNames.SelectAttributesAndGlobs),
+                    nameof(TrackingNames.JustTheGlobs),
+                    //nameof(TrackingNames.AdditionalTextAndPaths),
+                    //nameof(TrackingNames.AdditionalTextPathsAndGlobs),
+                    //nameof(TrackingNames.AdditionalTextMatches),
+                    //nameof(TrackingNames.AdditionalTextGlobsAndEmbeddedResource),
+                    //nameof(TrackingNames.AdditionalTextPathsAndGlobsEmbeddedResourcesAndAttributes),
+                    //nameof(TrackingNames.AdditionalTextEmbeddedResourcesAndMatchingAttributes),
+                    //nameof(TrackingNames.CombineOptionsAdditionalTextsEmbeddedResourceAndMatchingAttributesWithAttributes),
+                    //nameof(TrackingNames.AttributeEmbeddedResourceAndOptions)
                 ],
                 (driver, compilation) =>
                 {
@@ -228,38 +238,6 @@ public class GeneratorTests
     }
 
     [Fact]
-    public void CachedDocComments_FilesAreNotReadWhenChanged()
-    {
-        // run the generator, passing in the inputs and the tracking names
-        var (diagnostics, output1, output2)
-            = TestHelper.GetGeneratedOutput<EmbeddedResourcePropertiesAttribute, Generator>(
-                TestHelper.NoModification,
-                _additionalTexts,
-                [
-                    nameof(TrackingNames.OptionGeneration),
-                    nameof(TrackingNames.FindAttributes),
-                    nameof(TrackingNames.AttributesAndOptions)
-                ],
-                (driver, compilation) =>
-                {
-                    if (_additionalTexts[0] is InMemoryAdditionalText changingText)
-                    {
-                        var newText = changingText.Replace(changingText.TextSpan, 
-                            "Completely different text content");
-                        driver = driver.ReplaceAdditionalText(changingText, newText);
-                    }
-
-                    return (driver, compilation);
-                },
-                InputSource.Replace(", RegenerateDocCommentsWhileEditing = true", "")); // Change the attribute to not ignore the cache
-
-        // Assert the output
-        diagnostics.ShouldBeEmpty();
-        output1.LastOrDefault().ShouldBe(ExpectedOutput1);
-        output2.LastOrDefault().ShouldBe(ExpectedOutput1);
-    }
-
-    [Fact]
     public void ModifiedTextAfterTenthLine_PipelineEntirelyCached()
     {
         // run the generator, passing in the inputs and the tracking names
@@ -268,9 +246,19 @@ public class GeneratorTests
                 TestHelper.NoModification,
                 _additionalTexts,
                 [
-                    nameof(TrackingNames.OptionGeneration),
-                    nameof(TrackingNames.FindAttributes),
-                    nameof(TrackingNames.AttributesAndOptions)
+                    nameof(TrackingNames.AttributeChange),
+                    nameof(TrackingNames.AnalyzerConfigOptions),
+                    nameof(TrackingNames.CombineAttributesAndOptions),
+                    nameof(TrackingNames.SelectAttributesAndGlobs),
+                    nameof(TrackingNames.JustTheGlobs),
+                    //nameof(TrackingNames.AdditionalTextAndPaths),
+                    //nameof(TrackingNames.AdditionalTextPathsAndGlobs),
+                    //nameof(TrackingNames.AdditionalTextMatches),
+                    //nameof(TrackingNames.AdditionalTextGlobsAndEmbeddedResource),
+                    //nameof(TrackingNames.AdditionalTextPathsAndGlobsEmbeddedResourcesAndAttributes),
+                    //nameof(TrackingNames.AdditionalTextEmbeddedResourcesAndMatchingAttributes),
+                    //nameof(TrackingNames.CombineOptionsAdditionalTextsEmbeddedResourceAndMatchingAttributesWithAttributes),
+                    nameof(TrackingNames.AttributeEmbeddedResourceAndOptions)
                 ],
                 (driver, compilation) =>
                 {

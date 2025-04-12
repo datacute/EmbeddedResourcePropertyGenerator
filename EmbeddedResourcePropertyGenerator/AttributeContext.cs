@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 
 namespace Datacute.EmbeddedResourcePropertyGenerator
 {
@@ -20,21 +21,24 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             bool IsStatic, 
             Accessibility Accessibility,
             string RecordStructOrClass,
-            string[] TypeParameters);
-        public readonly ParentClassInfo[] ParentClasses { get; }
-        public bool HasParentClasses => ParentClasses.Length > 0;
+            EquatableImmutableArray<string> TypeParameters);
+
+        public readonly EquatableImmutableArray<ParentClassInfo> ParentClasses;
+        public bool HasParentClasses => ParentClasses.Count > 0;
 
         public readonly Accessibility DeclaredAccessibility; // public
         public readonly bool IsStatic;                       // static
         public readonly string RecordStructOrClass;          // (partial) class
         public readonly string Name;                         // ClassName
-        public readonly string[] TypeParameters;               // <T, U>
+        public readonly EquatableImmutableArray<string> TypeParameters;               // <T, U>
         public readonly string DisplayString;                // Namespace.ClassName
 
         public AttributeContext(in GeneratorAttributeSyntaxContext generatorAttributeSyntaxContext)
         {
-            LightweightTrace.Add(TrackingNames.AttributeContext_Transform);
-            
+            // No diagnostic tracing here - this triggers for each matching attribute, every time you type.
+            // the time taken within this method is about 1% ot the time the source generator takes
+            // to process all the attributes.
+
             var attributeTargetSymbol = (ITypeSymbol)generatorAttributeSyntaxContext.TargetSymbol;
 
             //todo support multiple attributes
@@ -92,32 +96,54 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
             if (generatorAttributeSyntaxContext.TargetSymbol is INamedTypeSymbol namedTypeTargetSymbol)
             {
-                TypeParameters = namedTypeTargetSymbol.TypeParameters.Select(tp => tp.Name).ToArray();
+                var typeParameters = namedTypeTargetSymbol.TypeParameters;
+                TypeParameters = typeParameters.Length > 0 ?
+                    typeParameters.ToEquatableImmutableArray(tp => tp.Name) :
+                    EquatableImmutableArray<string>.Empty;
             }
             else
             {
-                TypeParameters = Array.Empty<string>();
+                TypeParameters = EquatableImmutableArray<string>.Empty;
             }
 
             DisplayString = attributeTargetSymbol.ToDisplayString();
         
             // Parse parent classes from symbol's containing types
-            var parentClasses = new List<ParentClassInfo>();
+            var parentClassCount = 0;
             var containingType = attributeTargetSymbol.ContainingType;
+            // Count the number of parent classes
             while (containingType != null)
             {
-                var typeParams = containingType.TypeParameters.Select(tp => tp.Name).ToArray();
-            
-                parentClasses.Insert(0, new ParentClassInfo(
-                    containingType.Name, 
-                    containingType.IsStatic,
-                    containingType.DeclaredAccessibility,
-                    GetRecordStructOrClass(containingType),
-                    typeParams));
+                parentClassCount++;
                 containingType = containingType.ContainingType;
             }
 
-            ParentClasses = parentClasses.ToArray();
+            if (parentClassCount > 0)
+            {
+                containingType = attributeTargetSymbol.ContainingType;
+                var parentClassImmutableArrayBuilder = ImmutableArray.CreateBuilder<ParentClassInfo>(parentClassCount);
+                for (var i = 0; i < parentClassCount; i++)
+                {
+                    var typeParameters = containingType.TypeParameters;
+                    var typeParameterNames = typeParameters.Length > 0 ? 
+                        typeParameters.ToEquatableImmutableArray(tp => tp.Name) : 
+                        EquatableImmutableArray<string>.Empty;
+
+                    parentClassImmutableArrayBuilder.Insert(0, new ParentClassInfo(
+                        containingType.Name, 
+                        containingType.IsStatic,
+                        containingType.DeclaredAccessibility,
+                        GetRecordStructOrClass(containingType),
+                        typeParameterNames));
+                    containingType = containingType.ContainingType;
+                }
+
+                ParentClasses = parentClassImmutableArrayBuilder.MoveToImmutable().ToEquatableImmutableArray();
+            }
+            else
+            {
+                ParentClasses = EquatableImmutableArray<ParentClassInfo>.Empty;
+            }
         }
 
         private static string GetRecordStructOrClass(ITypeSymbol typeSymbol)
