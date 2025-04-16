@@ -10,23 +10,58 @@ public sealed class EquatableImmutableArray<T> : IEquatable<EquatableImmutableAr
     public static EquatableImmutableArray<T> Empty { get; } = new(ImmutableArray<T>.Empty);
 
     private readonly ImmutableArray<T> _values;
+    private readonly int _hashCode;
+    private readonly int _length;
     public T this[int index] => _values[index];
-    public int Count => _values.Length;
+    public int Count => _length;
 
-    public EquatableImmutableArray(ImmutableArray<T> values) => _values = values;
-    public bool Equals(EquatableImmutableArray<T>? other) => other != null && _values.SequenceEqual(other._values);
-    public override bool Equals(object? obj) => obj is EquatableImmutableArray<T> other && Equals(other);
-
-    public override int GetHashCode()
+    public EquatableImmutableArray(ImmutableArray<T> values)
     {
-        int hash = 0;
-        foreach (T value in _values)
+        _values = values;
+        _length = _values.Length;
+        
+        // Calculate hash code once during construction
+        var comparer = EqualityComparer<T>.Default;
+        var hash = 0;
+        for (var index = 0; index < _length; index++)
         {
-            hash = HashHelpers_Combine(hash, value is null ? 0 : value.GetHashCode());
+            var value = _values[index];
+            hash = HashHelpers_Combine(hash, value is null ? 0 : comparer.GetHashCode(value));
         }
 
-        return hash;
+        _hashCode = hash;
     }
+    
+    public bool Equals(EquatableImmutableArray<T>? other)
+    {
+        // Fast reference equality check
+        if (ReferenceEquals(this, other)) return true;
+        if (other is null) return false;
+
+        // If hash codes are different, arrays can't be equal
+        if (_hashCode != other._hashCode)
+            return false;
+
+        // Compare array lengths
+        if (_length != other._length) return false;
+
+        // If both are empty, they're equal
+        if (_length == 0) return true;
+
+        // Element-by-element comparison
+        var comparer = EqualityComparer<T>.Default;
+        for (int i = 0; i < _length; i++)
+        {
+            if (!comparer.Equals(_values[i], other._values[i]))
+                return false;
+        }
+
+        return true;
+    }
+
+    public override bool Equals(object? obj) => obj is EquatableImmutableArray<T> other && Equals(other);
+
+    public override int GetHashCode() => _hashCode;
 
     private static int HashHelpers_Combine(int h1, int h2)
     {
@@ -70,7 +105,9 @@ public static class EquatableImmutableArrayExtensions
         => provider1.Combine(
             provider2.Collect()
                 .Select<ImmutableArray<TRight>,EquatableImmutableArray<TRight>>(
-                    (array, _) => new EquatableImmutableArray<TRight>(array)));
+                    (array, _) => array.IsEmpty
+                        ? EquatableImmutableArray<TRight>.Empty 
+                        : new EquatableImmutableArray<TRight>(array)));
         
     public static IncrementalValueProvider<(TLeft Left, EquatableImmutableArray<TRight> Right)> CombineEquatable<TLeft, TRight>(
         this IncrementalValueProvider<TLeft> provider1, 
@@ -79,6 +116,8 @@ public static class EquatableImmutableArrayExtensions
         => provider1.Combine(
             provider2.Collect()
                 .Select<ImmutableArray<TRight>,EquatableImmutableArray<TRight>>(
-                    (array, _) => new EquatableImmutableArray<TRight>(array)));
+                    (array, _) => array.IsEmpty
+                        ? EquatableImmutableArray<TRight>.Empty 
+                        : new EquatableImmutableArray<TRight>(array)));
         
 }

@@ -7,7 +7,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     {
         public readonly string ExtensionArg;
         public readonly string PathArg;
-        public readonly bool TriggerDocCommentCacheRebuildArg = false;
         public readonly bool OutputDiagnosticTraceLog = false;
 
         public readonly string FilePath;
@@ -58,9 +57,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                             case bool boolValue:
                                 switch (namedArgument.Key)
                                 {
-                                    case "RegenerateDocCommentsWhileEditing":
-                                        TriggerDocCommentCacheRebuildArg = boolValue;
-                                        break;
                                     case "DiagnosticTraceLog":
                                         OutputDiagnosticTraceLog = boolValue;
                                         break;

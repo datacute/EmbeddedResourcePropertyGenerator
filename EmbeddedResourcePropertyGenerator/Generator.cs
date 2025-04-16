@@ -172,7 +172,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                 .ToEquatableImmutableArray(context => 
                     (
                         context, 
-                        resources.Where(resource => resource.MatchingContexts.Contains(context))
+                        resources
+                            .Where(resource => resource.MatchingContexts.Contains(context))
                             .Select(additionalTextAndContexts => additionalTextAndContexts.EmbeddedResource)
                             .ToEquatableImmutableArray(),
                         options
