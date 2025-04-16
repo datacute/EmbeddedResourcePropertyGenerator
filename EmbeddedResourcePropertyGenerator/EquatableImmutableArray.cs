@@ -9,18 +9,31 @@ public sealed class EquatableImmutableArray<T> : IEquatable<EquatableImmutableAr
 {
     public static EquatableImmutableArray<T> Empty { get; } = new(ImmutableArray<T>.Empty);
 
+
+    // Static factory method with singleton handling
+    public static EquatableImmutableArray<T> Create(ImmutableArray<T> values)
+    {
+        if (values.IsEmpty)
+            return Empty;
+            
+        return new EquatableImmutableArray<T>(values);
+    }
+    
     private readonly ImmutableArray<T> _values;
     private readonly int _hashCode;
     private readonly int _length;
     public T this[int index] => _values[index];
     public int Count => _length;
 
-    public EquatableImmutableArray(ImmutableArray<T> values)
+    private EquatableImmutableArray(ImmutableArray<T> values)
     {
         _values = values;
         _length = _values.Length;
         
         // Calculate hash code once during construction
+        // The source generation pipelines compare these a lot
+        // so being able to quickly tell when they are different
+        // is important.
         var comparer = EqualityComparer<T>.Default;
         var hash = 0;
         for (var index = 0; index < _length; index++)
@@ -84,7 +97,7 @@ public static class EquatableImmutableArrayExtensions
         {
             builder.Add(selector(value));
         }
-        return new(builder.MoveToImmutable());
+        return EquatableImmutableArray<T>.Create(builder.MoveToImmutable());
     }
     public static EquatableImmutableArray<T> ToEquatableImmutableArray<TSource,T>(this EquatableImmutableArray<TSource> values, Func<TSource,T> selector) where TSource : IEquatable<TSource> where T : IEquatable<T>
     {
@@ -93,10 +106,11 @@ public static class EquatableImmutableArrayExtensions
         {
             builder.Add(selector(value));
         }
-        return new(builder.MoveToImmutable());
+        return EquatableImmutableArray<T>.Create(builder.MoveToImmutable());
     }
-    public static EquatableImmutableArray<T> ToEquatableImmutableArray<T>(this IEnumerable<T> values) where T : IEquatable<T> => new(values.ToImmutableArray());
-    public static EquatableImmutableArray<T> ToEquatableImmutableArray<T>(this ImmutableArray<T> values) where T : IEquatable<T> => new(values);
+    public static EquatableImmutableArray<T> ToEquatableImmutableArray<T>(this IEnumerable<T> values) where T : IEquatable<T> => EquatableImmutableArray<T>.Create(values.ToImmutableArray());
+
+    public static EquatableImmutableArray<T> ToEquatableImmutableArray<T>(this ImmutableArray<T> values) where T : IEquatable<T> => EquatableImmutableArray<T>.Create(values);
 
     public static IncrementalValuesProvider<(TLeft Left, EquatableImmutableArray<TRight> Right)> CombineEquatable<TLeft, TRight>(
         this IncrementalValuesProvider<TLeft> provider1, 
@@ -105,9 +119,7 @@ public static class EquatableImmutableArrayExtensions
         => provider1.Combine(
             provider2.Collect()
                 .Select<ImmutableArray<TRight>,EquatableImmutableArray<TRight>>(
-                    (array, _) => array.IsEmpty
-                        ? EquatableImmutableArray<TRight>.Empty 
-                        : new EquatableImmutableArray<TRight>(array)));
+                    (array, _) => EquatableImmutableArray<TRight>.Create(array)));
         
     public static IncrementalValueProvider<(TLeft Left, EquatableImmutableArray<TRight> Right)> CombineEquatable<TLeft, TRight>(
         this IncrementalValueProvider<TLeft> provider1, 
@@ -116,8 +128,6 @@ public static class EquatableImmutableArrayExtensions
         => provider1.Combine(
             provider2.Collect()
                 .Select<ImmutableArray<TRight>,EquatableImmutableArray<TRight>>(
-                    (array, _) => array.IsEmpty
-                        ? EquatableImmutableArray<TRight>.Empty 
-                        : new EquatableImmutableArray<TRight>(array)));
+                    (array, _) => EquatableImmutableArray<TRight>.Create(array)));
         
 }
