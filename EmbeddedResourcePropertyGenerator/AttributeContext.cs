@@ -35,8 +35,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         public AttributeContext(in GeneratorAttributeSyntaxContext generatorAttributeSyntaxContext)
         {
             // No diagnostic tracing here - this triggers for each matching attribute, every time you type.
-            // the time taken within this method is about 1% ot the time the source generator takes
-            // to process all the attributes.
+            // the time taken within this method is about 1% of the time the source generator takes
+            // to process the attribute.
 
             var attributeTargetSymbol = (ITypeSymbol)generatorAttributeSyntaxContext.TargetSymbol;
 
@@ -93,9 +93,9 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             if (generatorAttributeSyntaxContext.TargetSymbol is INamedTypeSymbol namedTypeTargetSymbol)
             {
                 var typeParameters = namedTypeTargetSymbol.TypeParameters;
-                TypeParameters = typeParameters.Length > 0 ?
-                    typeParameters.ToEquatableImmutableArray(tp => tp.Name) :
-                    EquatableImmutableArray<string>.Empty;
+                TypeParameters = typeParameters.Length > 0
+                    ? typeParameters.ToEquatableImmutableArray(tp => tp.Name)
+                    : EquatableImmutableArray<string>.Empty;
             }
             else
             {
@@ -121,9 +121,9 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                 for (var i = 0; i < parentClassCount; i++)
                 {
                     var typeParameters = containingType.TypeParameters;
-                    var typeParameterNames = typeParameters.Length > 0 ? 
-                        typeParameters.ToEquatableImmutableArray(tp => tp.Name) : 
-                        EquatableImmutableArray<string>.Empty;
+                    var typeParameterNames = typeParameters.Length > 0
+                        ? typeParameters.ToEquatableImmutableArray(tp => tp.Name)
+                        : EquatableImmutableArray<string>.Empty;
 
                     parentClassImmutableArrayBuilder.Insert(0, new ParentClassInfo(
                         containingType.Name, 

@@ -98,7 +98,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
             var matchingContexts = attributesAndGlobs
                 .Where(attributeAndGlob => directory == attributeAndGlob.Path && extension == attributeAndGlob.Extension)
-                .Select(attributeAndGlob => attributeAndGlob.AttributeContext).ToEquatableImmutableArray();
+                .Select(attributeAndGlob => attributeAndGlob.AttributeContext).ToEquatableImmutableArray(ct);
 
             return (additionalText, embeddedResource, matchingContexts);
         }
@@ -175,9 +175,10 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                         resources
                             .Where(resource => resource.MatchingContexts.Contains(context))
                             .Select(additionalTextAndContexts => additionalTextAndContexts.EmbeddedResource)
-                            .ToEquatableImmutableArray(),
+                            .ToEquatableImmutableArray(ct),
                         options
-                    )
+                    ),
+                    ct
                 );
 
             return contextsEmbeddedResourcesAndOptions;
