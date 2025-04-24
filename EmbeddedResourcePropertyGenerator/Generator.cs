@@ -1,187 +1,216 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Immutable;
 
 namespace Datacute.EmbeddedResourcePropertyGenerator
 {
+    /// <summary>
+    /// Generate partial classes containing properties giving access to embedded resources.
+    /// </summary>
     [Generator(LanguageNames.CSharp)]
     public sealed class Generator : IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             LightweightTrace.Add((int)TrackingNames.GeneratorInitialized);
-            
-            var attributes = 
+
+            // 1. Base attribute data -> AttributeContext
+            var attributeContexts =
                 context.SyntaxProvider
                     .ForAttributeWithMetadataName(
                         Templates.AttributeFullyQualified,
                         predicate: (node, _) => node is TypeDeclarationSyntax,
                         transform: (attributeSyntaxContext, _) => new AttributeContext(attributeSyntaxContext))
-                    .Trace(TrackingNames.AttributeChange);
+                    .Trace(TrackingNames.AttributeContextsCreated);
 
-            var options = 
+            // 2. Options -> GeneratorOptions
+            var options =
                 context.AnalyzerConfigOptionsProvider
                     .Select(GeneratorOptions.Select)
                     .Trace(TrackingNames.AnalyzerConfigOptions);
 
-            var attributesAndOptions = 
-                attributes
+            // 3. Combine base attributes and options -> (AttributeContext, GeneratorOptions)
+            var attributesAndOptions =
+                attributeContexts
                     .Combine(options)
-                    .Trace(TrackingNames.CombineAttributesAndOptions);
+                    .Select(SelectAttributeAndOptions)
+                    .Trace(TrackingNames.AttributesAndOptionsCombined);
 
-            var attributesAndGlobs = 
+            // --- Prepare Resource Matching Data Separately ---
+
+            // Selects (AttributeContext, Path, Extension) from (AttributeContext, Options)
+            var attributesAndGlobs =
                 attributesAndOptions
                     .Select(SelectAttributesAndGlobs)
-                    .Trace(TrackingNames.SelectAttributesAndGlobs);
+                    .Trace(TrackingNames.AttributeGlobInfoSelected);
 
-            var globs = 
+            // Selects (Path, Extension) from (AttributeContext, Path, Extension)
+            var attributeGlobs =
                 attributesAndGlobs
-                    .Select(JustTheGlobs)
-                    .Trace(TrackingNames.JustTheGlobs);
+                    .Select(SelectJustGlobs)
+                    .Trace(TrackingNames.AttributeGlobsSelected);
 
-            var additionalTextsEmbeddedResourcesAndMatchingAttributes = 
+            // 4. Find all (AttributeContext, EmbeddedResource) matches
+            var matchedResourceAndAttribute =
                 context.AdditionalTextsProvider
-                    .Select(AddDirectoryAndExtension)
-                    .Trace(TrackingNames.AdditionalTextAndPaths)
-                    .CombineEquatable(globs)
-                    .Trace(TrackingNames.AdditionalTextPathsAndGlobs)
-                    .Where(AdditionalTextMatches)
-                    .Trace(TrackingNames.AdditionalTextMatches)
-                    .Select(ExtractMatchingEmbeddedResourceDocComments)
-                    .Trace(TrackingNames.AdditionalTextGlobsAndEmbeddedResource)
+                    .Select(SelectFileInfo)
+                    .Trace(TrackingNames.FileInfoSelected)
+                    .CombineEquatable(attributeGlobs)
+                    .Trace(TrackingNames.FileInfoAndGlobsCombined)
+                    .Select(SelectAdditionalTextAndGlobWithAttributeGlobs)
+                    .Where(DoesAdditionalTextGlobMatchAnyAttributeGlobs)
+                    .Trace(TrackingNames.MatchingFilesFiltered)
+                    .Select(ExtractEmbeddedResourceWithFileInfo)
+                    .Trace(TrackingNames.EmbeddedResourceExtracted)
                     .CombineEquatable(attributesAndGlobs)
-                    .Trace(TrackingNames.AdditionalTextPathsAndGlobsEmbeddedResourcesAndAttributes)
-                    .Select(ReduceToMatchingContexts)
-                    .Trace(TrackingNames.AdditionalTextEmbeddedResourcesAndMatchingAttributes);
+                    .Trace(TrackingNames.ResourceAndAllAttributeGlobsCombined)
+                    .SelectMany(SelectMatchingResourceAndAttribute)
+                    .Trace(TrackingNames.MatchingResourceAndAttributeSelected);
 
-            var attributesEmbeddedResourcesAndOptions =
-                options.CombineEquatable(additionalTextsEmbeddedResourcesAndMatchingAttributes).Trace(TrackingNames.CombineOptionsWithAdditionalTextsEmbeddedResourceAndMatchingAttributes).WithTrackingName(nameof(TrackingNames.CombineOptionsWithAdditionalTextsEmbeddedResourceAndMatchingAttributes))
-                    .CombineEquatable(attributes)
-                    .Trace(TrackingNames.CombineOptionsAdditionalTextsEmbeddedResourceAndMatchingAttributesWithAttributes)
-                    .SelectMany(GroupByAttribute)
-                    .Trace(TrackingNames.AttributeEmbeddedResourceAndOptions);
-            
-            context.RegisterSourceOutput(attributesEmbeddedResourcesAndOptions,
-                (sourceProductionContext, attributeEmbeddedResourcesAndOptions) =>
+            // 5. Group resources by AttributeContext into a lookup
+            var resourcesByAttributeContextLookup =
+                matchedResourceAndAttribute
+                    .Collect().Select(EquatableImmutableArray<AttributeAndResource>.Create)
+                    .Select(GroupResourcesByAttributeContext)
+                    .Trace(TrackingNames.ResourcesGroupedByAttributeContext);
+
+            // --- Combine Base Attributes with Grouped Resources (Left Join) ---
+
+            // 6. Combine the main attributes stream with the single lookup dictionary
+            var generationInput =
+                attributesAndOptions
+                    .Combine(resourcesByAttributeContextLookup)
+                    .Select(PerformResourceLookup)
+                    .Trace(TrackingNames.GenerationInputPrepared);
+
+            // 7. Register Source Output
+            context.RegisterSourceOutput(generationInput,
+                (sourceProductionContext, inputData) =>
                 {
                     LightweightTrace.Add((int)TrackingNames.GeneratingSourceFile);
-
-                    var (attributeContext, embeddedResources, generatorOptions) = attributeEmbeddedResourcesAndOptions;
+                    var (attributeContext, generatorOptions, embeddedResources) = inputData;
                     GenerateFolderEmbed(sourceProductionContext, attributeContext, embeddedResources, generatorOptions);
                 });
         }
 
-        private (string Path, string Extension) JustTheGlobs(
-            (AttributeContext AttributeContext, string Path, string Extension) globsAndContext, 
-            CancellationToken ct) => (globsAndContext.Path, globsAndContext.Extension);
+        // --- Helper Methods ---
 
-        private (AdditionalText AdditionalText, string Directory, string Extension) AddDirectoryAndExtension(AdditionalText additionalText, 
-            CancellationToken ct) => (additionalText, Path.GetDirectoryName(additionalText.Path), Path.GetExtension(additionalText.Path));
+        // Selects (AdditionalText, Directory, Extension) from AdditionalText
+        private static AttributeAndOptions SelectAttributeAndOptions((AttributeContext AttributeContext, GeneratorOptions Options) attributeAndOptions, CancellationToken _) =>
+            new(attributeAndOptions.AttributeContext, attributeAndOptions.Options);
 
-        private (AdditionalText AdditionalText, EmbeddedResource EmbeddedResource, EquatableImmutableArray<AttributeContext> MatchingContexts) 
-            ReduceToMatchingContexts(
-                (
-                    (
-                        (
-                            (AdditionalText AdditionalText, string Directory, string Extension) AdditionalTextAndPaths, 
-                            EquatableImmutableArray<(string Path, string Extension)> Globs
-                        ) AdditionalTextsAndGlobs, 
-                        EmbeddedResource EmbeddedResource
-                    ) ResourceAndGlobs, 
-                    EquatableImmutableArray<(AttributeContext AttributeContext, string Path, string Extension)> AttributesAndGlobs
-                ) inputs,
-                CancellationToken ct)
+        // Selects (AttributeContext, Path, Extension) from (AttributeContext, Options)
+        private static AttributeAndGlob SelectAttributesAndGlobs(AttributeAndOptions attributeAndOptions, CancellationToken ct)
         {
-            LightweightTrace.Add((int)TrackingNames.ReduceToMatchingContexts);
-
-            var ((((additionalText, directory, extension), _), 
-                embeddedResource), attributesAndGlobs) = inputs;
-
-            var matchingContexts = attributesAndGlobs
-                .Where(attributeAndGlob => directory == attributeAndGlob.Path && extension == attributeAndGlob.Extension)
-                .Select(attributeAndGlob => attributeAndGlob.AttributeContext).ToEquatableImmutableArray(ct);
-
-            return (additionalText, embeddedResource, matchingContexts);
+            var resourceSearchPath = GetResourceSearchPath(attributeAndOptions.AttributeContext, attributeAndOptions.Options);
+            var glob = new Glob(resourceSearchPath, attributeAndOptions.AttributeContext.ExtensionArg);
+            return new AttributeAndGlob(attributeAndOptions.AttributeContext, glob);
         }
 
-        private (AttributeContext AttributeContext, string Path, string Extension) 
-            SelectAttributesAndGlobs(
-                (AttributeContext AttributeContext, GeneratorOptions Options) attributeContextAndOptions,
-                CancellationToken ct)
+        // Selects (Path, Extension) from (AttributeContext, Path, Extension)
+        private static Glob SelectJustGlobs(AttributeAndGlob attributeAndGlob, CancellationToken _) => attributeAndGlob.Glob;
+
+        // Selects (AdditionalText, Directory, Extension) from AdditionalText
+        private static AdditionalTextAndGlob SelectFileInfo(AdditionalText additionalText, CancellationToken _) =>
+            new(additionalText, new Glob(Path.GetDirectoryName(additionalText.Path), Path.GetExtension(additionalText.Path)));
+
+        private static AdditionalTextAndGlobWithAttributeGlobs SelectAdditionalTextAndGlobWithAttributeGlobs(
+            (AdditionalTextAndGlob AdditionalTextAndGlob, EquatableImmutableArray<Glob> AttributeGlobs) source,
+            CancellationToken _) =>
+            new(source.AdditionalTextAndGlob, source.AttributeGlobs);
+
+        // Checks if the file's (Directory, Extension) matches any glob in the list
+        private static bool DoesAdditionalTextGlobMatchAnyAttributeGlobs(
+            AdditionalTextAndGlobWithAttributeGlobs additionalTextAndGlobWithAttributeGlobs)
         {
-            var attributeContext = attributeContextAndOptions.AttributeContext;
-            var options = attributeContextAndOptions.Options;
-            var path = GetResourceSearchPath(attributeContext, options);
-            return (attributeContext, path, attributeContext.ExtensionArg);
+            var attributeGlobsArray = additionalTextAndGlobWithAttributeGlobs.AttributeGlobs;
+            var additionalTextAndGlob = additionalTextAndGlobWithAttributeGlobs.AdditionalTextAndGlob;
+            var glob = additionalTextAndGlob.Glob;
+            var directory = glob.Directory;
+            var extension = glob.Extension;
+
+            return attributeGlobsArray.Any(attributeGlob => 
+                directory == attributeGlob.Directory && 
+                (attributeGlob.Extension == ".*" || extension == attributeGlob.Extension));
         }
 
-        private bool AdditionalTextMatches(
-            (
-                (AdditionalText AdditionalText, string Directory, string Extension) AdditionalTextAndPaths, 
-                EquatableImmutableArray<(string Path, string Extension)> Globs
-                ) additionalTextsAndGlobs)
-        {
-            var (_, directory, extension) = additionalTextsAndGlobs.AdditionalTextAndPaths;
-
-            return additionalTextsAndGlobs.Globs.Any(glob =>
-                directory == glob.Path && extension == glob.Extension);
-        }
-
-        private (((AdditionalText AdditionalText, string Directory, string Extension) AdditionalTextAndPaths, EquatableImmutableArray<(string Path, string Extension)> Globs) AdditionalTextsAndGlobs, EmbeddedResource EmbeddedResource)
-            ExtractMatchingEmbeddedResourceDocComments(
-                (
-                    (AdditionalText AdditionalText, string Directory, string Extension) AdditionalTextAndPaths, 
-                    EquatableImmutableArray<(string Path, string Extension)> Globs
-                ) additionalTextsAndGlobs,
-                CancellationToken ct)
+        // Extracts EmbeddedResource content, keeping the original file+glob info
+        private static AdditionalTextGlobsAndResources ExtractEmbeddedResourceWithFileInfo(
+            AdditionalTextAndGlobWithAttributeGlobs additionalTextAndGlobWithAttributeGlobs, 
+            CancellationToken ct)
         {
             if (ct.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 8000);
             ct.ThrowIfCancellationRequested();
 
-            var additionalText = additionalTextsAndGlobs.AdditionalTextAndPaths.AdditionalText;
-
+            var additionalText = additionalTextAndGlobWithAttributeGlobs.AdditionalTextAndGlob.AdditionalText;
             LightweightTrace.Add((int)TrackingNames.GeneratingDocComment + additionalText.Path.Length * 1000);
-            
+
             var docCommentCode = AdditionalTextDocCommentCreator.GenerateDocCommentCode(additionalText, ct);
             var embeddedResource = new EmbeddedResource(additionalText.Path, docCommentCode);
 
-            return (additionalTextsAndGlobs, embeddedResource);
+            return new AdditionalTextGlobsAndResources(additionalTextAndGlobWithAttributeGlobs, embeddedResource);
         }
 
-        private EquatableImmutableArray<(AttributeContext Context, EquatableImmutableArray<EmbeddedResource> EmbeddedResources, GeneratorOptions Options)> 
-            GroupByAttribute(
+        // Creates (AttributeContext, EmbeddedResource) for each matching attribute
+        private static IEnumerable<AttributeAndResource> SelectMatchingResourceAndAttribute(
                 (
-                    (
-                        GeneratorOptions Options, 
-                        EquatableImmutableArray<(
-                            AdditionalText AdditionalText, 
-                            EmbeddedResource EmbeddedResource, 
-                            EquatableImmutableArray<AttributeContext> MatchingContexts
-                            )> Resources
-                    ) OptionsAndResources, 
-                    EquatableImmutableArray<AttributeContext> AttributeContexts) optionsResourcesAndAttributeContexts,
+                    AdditionalTextGlobsAndResources ResourceAndFileData,
+                    EquatableImmutableArray<AttributeAndGlob> AttributesAndGlobs
+                ) resourceAndAllAttributeGlobs,
                 CancellationToken ct)
         {
-            LightweightTrace.Add((int)TrackingNames.GroupByAttribute);
+            var resourceAndFileData = resourceAndAllAttributeGlobs.ResourceAndFileData;
+            var allAttributesAndGlobsArray = resourceAndAllAttributeGlobs.AttributesAndGlobs;
+            var glob = resourceAndFileData.FileAndGlobs.AdditionalTextAndGlob.Glob;
+            var directory = glob.Directory;
+            var extension = glob.Extension;
+            var embeddedResource = resourceAndFileData.EmbeddedResource;
 
-            var optionsAndResources = optionsResourcesAndAttributeContexts.OptionsAndResources;
-            var attributeContexts = optionsResourcesAndAttributeContexts.AttributeContexts;
-            var options = optionsAndResources.Options;
-            var resources = optionsAndResources.Resources;
+            return allAttributesAndGlobsArray
+                .Where(attrAndGlob => 
+                    directory == attrAndGlob.Glob.Directory && 
+                    (attrAndGlob.Glob.Extension == ".*" || extension == attrAndGlob.Glob.Extension))
+                .Select(matchingAttrAndGlob => new AttributeAndResource(matchingAttrAndGlob.AttributeContext, embeddedResource));
+        }
 
-            var contextsEmbeddedResourcesAndOptions = attributeContexts
-                .ToEquatableImmutableArray(context => 
-                    (
-                        context, 
-                        resources
-                            .Where(resource => resource.MatchingContexts.Contains(context))
-                            .Select(additionalTextAndContexts => additionalTextAndContexts.EmbeddedResource)
-                            .ToEquatableImmutableArray(ct),
-                        options
-                    ),
-                    ct
-                );
+        // Groups the collected (AttributeContext, EmbeddedResource) into a dictionary lookup
+        private static Dictionary<AttributeContext, EquatableImmutableArray<EmbeddedResource>> GroupResourcesByAttributeContext(
+            EquatableImmutableArray<AttributeAndResource> resourceAndAttribute, CancellationToken ct)
+        {
+            var grouped = new Dictionary<AttributeContext, ImmutableArray<EmbeddedResource>.Builder>();
+            foreach (var (context, resource) in resourceAndAttribute)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (!grouped.TryGetValue(context, out var builder))
+                {
+                    builder = ImmutableArray.CreateBuilder<EmbeddedResource>();
+                    grouped[context] = builder;
+                }
+                builder.Add(resource);
+            }
 
-            return contextsEmbeddedResourcesAndOptions;
+            return grouped.ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.ToImmutable().ToEquatableImmutableArray(ct));
+        }
+
+        // Performs the left join lookup for resources based on the AttributeContext
+        private static AttributeOptionsAndResources PerformResourceLookup(
+            (
+                AttributeAndOptions AttributeAndOptions,
+                Dictionary<AttributeContext, EquatableImmutableArray<EmbeddedResource>> ResourcesByAttributeContextLookup
+            ) attributeOptionsAndLookup,
+            CancellationToken _)
+        {
+            var attributeContext = attributeOptionsAndLookup.AttributeAndOptions.AttributeContext;
+            var options = attributeOptionsAndLookup.AttributeAndOptions.Options;
+            var lookupDictionary = attributeOptionsAndLookup.ResourcesByAttributeContextLookup;
+
+            var resourcesArray = lookupDictionary.TryGetValue(attributeContext, out var foundResourcesArray)
+                ? foundResourcesArray
+                : EquatableImmutableArray<EmbeddedResource>.Empty;
+
+            return new AttributeOptionsAndResources(attributeContext, options, resourcesArray);
         }
 
         private static void GenerateFolderEmbed(
@@ -213,18 +242,36 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             string baseDir;
             string resourceSearchPath;
 
-            if (attributeContext.PathArg.StartsWith("/") || attributeContext.PathArg.StartsWith("\\"))
+            var pathArg = attributeContext.PathArg;
+
+            if (pathArg.StartsWith("/") || pathArg.StartsWith("\\"))
             {
                 baseDir = options.ProjectDir;
-                resourceSearchPath = attributeContext.PathArg.Substring(1);
+                resourceSearchPath = pathArg.Length > 0 ? pathArg.Substring(1) : string.Empty;
             }
             else
             {
                 baseDir = Path.GetDirectoryName(attributeContext.FilePath) ?? string.Empty;
-                resourceSearchPath = attributeContext.PathArg;
+                resourceSearchPath = pathArg;
             }
 
-            return Path.GetFullPath(Path.Combine(baseDir, resourceSearchPath));
+            try
+            {
+                return Path.GetFullPath(Path.Combine(baseDir, resourceSearchPath));
+            }
+            catch (ArgumentException)
+            {
+                return string.Empty;
+            }
         }
     }
+
+    public record struct AttributeAndOptions(AttributeContext AttributeContext, GeneratorOptions Options);
+    public record struct Glob(string? Directory, string Extension);
+    public record struct AttributeAndGlob(AttributeContext AttributeContext, Glob Glob);
+    public record struct AdditionalTextAndGlob(AdditionalText AdditionalText, Glob Glob);
+    public record struct AdditionalTextGlobsAndResources(AdditionalTextAndGlobWithAttributeGlobs FileAndGlobs, EmbeddedResource EmbeddedResource);
+    public record struct AdditionalTextAndGlobWithAttributeGlobs(AdditionalTextAndGlob AdditionalTextAndGlob, EquatableImmutableArray<Glob> AttributeGlobs);
+    public record struct AttributeAndResource(AttributeContext AttributeContext, EmbeddedResource Resource);
+    public record struct AttributeOptionsAndResources(AttributeContext Context, GeneratorOptions Options, EquatableImmutableArray<EmbeddedResource> Resources);
 }

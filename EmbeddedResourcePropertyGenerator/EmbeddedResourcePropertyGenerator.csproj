@@ -37,8 +37,8 @@
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
         <!-- Pack the attributes dll in the lib\netstandard2.0 path -->
-        <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="true" />
-        <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.xml" Pack="true" PackagePath="lib\netstandard2.0" Visible="true" />
+        <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="false" />
+        <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.xml" Pack="true" PackagePath="lib\netstandard2.0" Visible="false" />
 
         <None Include="./Datacute.EmbeddedResourcePropertyGenerator.props" Pack="true" PackagePath="build" Visible="true" />
 
