@@ -7,7 +7,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     {
         public CodeGenerator(in AttributeContext context,
             string resourceSearchPath,
-            in ImmutableEquatableArray<EmbeddedResource> embeddedResources,
+            in EquatableImmutableArray<EmbeddedResource> embeddedResources,
             in GeneratorOptions options,
             in CancellationToken cancellationToken)
         {
@@ -26,7 +26,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         private readonly AttributeContext _context;
         private readonly string _resourceSearchPath;
-        private readonly ImmutableEquatableArray<EmbeddedResource> _embeddedResources;
+        private readonly EquatableImmutableArray<EmbeddedResource> _embeddedResources;
         private readonly GeneratorOptions _options;
         private readonly StringBuilder _buffer;
         private readonly CancellationToken _cancellationToken;
@@ -35,6 +35,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         public string GenerateSource()
         {
+            if (_cancellationToken.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 2000);
             _cancellationToken.ThrowIfCancellationRequested();
             GeneratePropertyNames();
 
@@ -68,6 +69,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             _propertyNames.Clear();
             foreach (var text in _embeddedResources)
             {
+                if (_cancellationToken.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 3000);
                 _cancellationToken.ThrowIfCancellationRequested();
                 var resourceFilePath = text.Path;
 
@@ -156,9 +158,11 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             indent = AppendStartBlock(indent);
 
             var innerIndentString = StringForIndent(indent);
-            foreach (var propertyName in _propertyNames.Keys)
+            foreach (var kvp in _propertyNames.OrderBy(kvp => kvp.Value.Path))
             {
+                if (_cancellationToken.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 4000);
                 _cancellationToken.ThrowIfCancellationRequested();
+                var propertyName = kvp.Key;
                 _buffer.AppendFormat(Templates.BackingField, innerIndentString, propertyName).AppendLine();
             }
 
@@ -175,8 +179,9 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             indent = AppendStartBlock(indent);
 
             var innerIndentString = StringForIndent(indent);
-            foreach (var kvp in _propertyNames)
+            foreach (var kvp in _propertyNames.OrderBy(kvp => kvp.Value.Path))
             {
+                if (_cancellationToken.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 5000);
                 _cancellationToken.ThrowIfCancellationRequested();
 
                 var propertyName = kvp.Key;
@@ -243,7 +248,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         private string GetGenericTypes() => GetGenericTypes(_context.TypeParameters);
 
-        private string GetGenericTypes(string[] genericTypes) =>
+        private string GetGenericTypes(EquatableImmutableArray<string> genericTypes) =>
             genericTypes.Any()
                 ? $"<{string.Join(",", genericTypes)}>"
                 : string.Empty;
@@ -275,8 +280,9 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         private int ProcessMatchingEmbeddedResources(int indent)
         {
             var indentString = StringForIndent(indent);
-            foreach (var kvp in _propertyNames)
+            foreach (var kvp in _propertyNames.OrderBy(kvp => kvp.Value.Path))
             {
+                if (_cancellationToken.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 6000);
                 _cancellationToken.ThrowIfCancellationRequested();
 
                 var propertyName = kvp.Key;
@@ -331,7 +337,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             // Close parent classes if any
             if (_context.HasParentClasses)
             {
-                for (int i = 0; i < _context.ParentClasses.Length; i++)
+                for (int i = 0; i < _context.ParentClasses.Count; i++)
                 {
                     indent = AppendEndBlock(indent);
                 }
@@ -346,8 +352,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             {
                 _buffer.AppendLine();
                 _buffer.AppendLine("/* Diagnostic Trace Log");
-                LightweightTrace.Add(TrackingNames.DiagnosticTraceLog_Written);
-                LightweightTrace.GetTrace(_buffer, TrackingNames.TracingNames);
+                LightweightTrace.Add((int)TrackingNames.DiagnosticTraceLogWritten);
+                LightweightTrace.GetTrace(_buffer, TrackingNameDescriptions.EventNameMap);
                 _buffer.AppendLine("*/");
             }
         }

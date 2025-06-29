@@ -20,6 +20,9 @@ public static class AdditionalTextDocCommentCreator
         var outputLines = 0;
         foreach (var textLine in textLineCollection)
         {
+            if (ct.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 9000);
+            ct.ThrowIfCancellationRequested();
+
             // Truncation happens after 10 lines
             // but if there are only 11 lines,
             // we show the last line instead of a line saying that there is 1 more line.
