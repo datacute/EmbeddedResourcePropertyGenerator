@@ -60,11 +60,40 @@ jobs:
       if: steps.get_tag.outputs.tag != ''
       run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
       
+    - name: Extract release notes from CHANGELOG.md
+      if: steps.get_tag.outputs.tag != ''
+      id: extract_notes
+      run: |
+        VERSION="${{ steps.get_tag.outputs.tag }}"
+        echo "Extracting notes for version: $VERSION"
+
+        NOTES=$(awk -v ver="v$VERSION" '
+          $0 ~ "^## "ver"$" {flag=1; next}
+          flag && $0 ~ "^## " {flag=0}
+          flag
+        ' <(sed "s/\r$//" CHANGELOG.md) | awk '!/^Release Date:/')
+        NOTES=$(echo "$NOTES" | sed '/./,$!d' | tac | sed '/./,$!d' | tac)
+
+        if [ -z "$NOTES" ]; then
+          echo "Did not find notes with 'v' prefix, trying without."
+          NOTES=$(awk -v ver="$VERSION" '
+            $0 ~ "^## "ver"$" {flag=1; next}
+            flag && $0 ~ "^## " {flag=0}
+            flag
+          ' <(sed "s/\r$//" CHANGELOG.md) | awk '!/^Release Date:/')
+          NOTES=$(echo "$NOTES" | sed '/./,$!d' | tac | sed '/./,$!d' | tac)
+        fi
+
+        # Set output
+        echo "notes<<EOF" >> $GITHUB_OUTPUT
+        echo "$NOTES" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
     - name: Create GitHub Release
       if: steps.get_tag.outputs.tag != ''
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.get_tag.outputs.tag }}
-        generate_release_notes: true
+        body: ${{ steps.extract_notes.outputs.notes }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
