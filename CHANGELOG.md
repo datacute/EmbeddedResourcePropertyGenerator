@@ -1,6 +1,17 @@
 Changelog
 --- 
 
+## v1.1.0
+Release Date: 2025-06-29
+
+### Features
+- Rewrote the generator pipeline to improve performance, and only regenerate when additional texts are changed (resolves #4)
+- Added support for nested classes and generics (resolves #3)
+- Made integration easier by automatically including EmbeddedResources as Additional Text Files
+- Lowered the minimum version of Microsoft.CodeAnalysis.CSharp required to support older .NET versions
+
+**Full Changelog**: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/1.0.0...1.1.0
+
 ## v1.0.0
 Release Date: 2024-10-28
 
