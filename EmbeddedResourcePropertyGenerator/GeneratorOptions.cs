@@ -2,7 +2,7 @@
 
 namespace Datacute.EmbeddedResourcePropertyGenerator
 {
-    public readonly struct GeneratorOptions
+    public readonly record struct GeneratorOptions
     {
         public readonly bool IsDesignTimeBuild;
         public readonly string ProjectDir;
@@ -19,6 +19,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         public static GeneratorOptions Select(AnalyzerConfigOptionsProvider provider, CancellationToken token)
         {
+            if (token.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 7000);
             token.ThrowIfCancellationRequested();
             return new GeneratorOptions(provider.GlobalOptions);
         }

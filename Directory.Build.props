@@ -4,7 +4,7 @@
 
 	<PropertyGroup>
 		<Authors>Stephen Denne</Authors>
-		<Copyright>Copyright © Stephen Denne 2024</Copyright>
+		<Copyright>Copyright © Stephen Denne 2024, 2025</Copyright>
 		<Company>Datacute</Company>
 		<PackageProjectUrl>https://github.com/datacute/EmbeddedResourcePropertyGenerator</PackageProjectUrl>
 		<CheckEolTargetFramework>false</CheckEolTargetFramework>
