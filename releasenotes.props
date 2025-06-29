@@ -1,5 +1,16 @@
 <Project>
   <PropertyGroup>
+    <PackageReleaseNotes Condition="'$(PackageVersion)' == '1.1.0'">
+      <![CDATA[
+
+Features
+- Rewrote the generator pipeline to improve performance, and only regenerate when additional texts are changed (resolves #4)
+- Added support for nested classes and generics (resolves #3)
+- Made integration easier by automatically including EmbeddedResources as Additional Text Files
+- Lowered the minimum version of Microsoft.CodeAnalysis.CSharp required to support older .NET versions
+
+]]>
+    </PackageReleaseNotes>
     <PackageReleaseNotes Condition="'$(PackageVersion)' == '1.0.0'">
       <![CDATA[
 
