@@ -1,76 +1,83 @@
-Changelog
---- 
+# Changelog
 
-## v1.1.0
-Release Date: 2025-06-29
+All notable changes to this project will be documented in this file.
 
-### Features
-- Rewrote the generator pipeline to improve performance, and only regenerate when additional texts are changed (resolves #4)
-- Added support for nested classes and generics (resolves #3)
-- Made integration easier by automatically including EmbeddedResources as Additional Text Files
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [[1.1.0]] - 2025-06-29
+
+### Added
+- Support for nested classes and generics
+- Automatic inclusion of EmbeddedResources as Additional Text Files to make integration easier
+
+### Changed
+- Rewrote the generator pipeline to improve performance and only regenerate when additional texts are changed
 - Lowered the minimum version of Microsoft.CodeAnalysis.CSharp required to support older .NET versions
 
-**Full Changelog**: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/1.0.0...1.1.0
+### Fixed
+- Resolves issue #4 (performance improvements)
+- Resolves issue #3 (nested classes and generics support)
 
-## v1.0.0
-Release Date: 2024-10-28
+## [[1.0.0]] - 2024-10-28
 
-### Features
+### Added
+- First stable release
 
-* First stable release
+## [[0.0.1-alpha.6b]] - 2024-09-24
 
-## v0.0.1-alpha.6b
-Release Date: 2024-09-24
+### Fixed
+- Corrected the published package (but the new version broke the doc links)
 
-### Fixes
-* Corrected the published package (but the new version broke the doc links)
+## [[0.0.1-alpha.6]] - 2024-09-24
 
-## v0.0.1-alpha.6
-Release Date: 2024-09-24
+### Added
+- More documentation
 
-### Features
+### Changed
+- Removed windows specific paths from tests
 
-* Removed windows specific paths from tests
-* More documentation
+## [[0.0.1-alpha.5]] - 2024-09-22
 
-## v0.0.1-alpha.5
-Release Date: 2024-09-22
+### Fixed
+- Included doc-comments of the EmbeddedResourceProperties attribute in the package
 
-### Fixes
+## [[0.0.1-alpha.4]] - 2024-09-15
 
-* Included doc-comments of the EmbeddedResourceProperties attribute in the package
+### Added
+- Read method in each class
+- The Read method, backing fields, and resource names are now available to the class
 
-## v0.0.1-alpha.4
-Release Date: 2024-09-15
+### Changed
+- Moved the attribute to its own dll
 
-### Features
+## [[0.0.1-alpha.3]] - 2024-09-14
 
-* Moved the attribute to its own dll
-* Include Read method in each class
-* The Read method, backing fields, and resource names are available to the class
+### Added
+- Included `EmbeddedResourcePropertyExample` project in github repository
 
-## v0.0.1-alpha.3
-Release Date: 2024-09-14
+### Fixed
+- Removing doc duplication
 
-### Features
+## [[0.0.1-alpha.2]] - 2024-09-13
 
-* Included `EmbeddedResourcePropertyExample` project in github repository
+### Added
+- `[Conditional]` attribute to restrict inclusion of the usage of the `EmbeddedResourcePropertiesAttribute` in the output
 
-### Fixes
+## [[0.0.1-alpha]] - 2024-09-09
 
-* Removing doc duplication
+### Added
+- Support for overriding `ReadEmbeddedResourceValue` partial method
 
-## v0.0.1-alpha.2
-Release Date: 2024-09-13
-
-### Features
-
-* Add `[Conditional]` attribute to restrict inclusion of the usage of 
-  the `EmbeddedResourcePropertiesAttribute` in the output.
-
-## v0.0.1-alpha
-Release Date: 2024-09-09
-
-### Features
-
-* Add support for overriding `ReadEmbeddedResourceValue` partial method
+[Unreleased]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/1.1.0...HEAD
+[1.1.0]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/1.0.0...1.1.0
+[1.0.0]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.6b...1.0.0
+[0.0.1-alpha.6b]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.6...0.0.1-alpha.6b
+[0.0.1-alpha.6]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.5...0.0.1-alpha.6
+[0.0.1-alpha.5]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.4...0.0.1-alpha.5
+[0.0.1-alpha.4]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.3...0.0.1-alpha.4
+[0.0.1-alpha.3]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.2...0.0.1-alpha.3
+[0.0.1-alpha.2]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha...0.0.1-alpha.2
+[0.0.1-alpha]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/0.0.1-alpha
