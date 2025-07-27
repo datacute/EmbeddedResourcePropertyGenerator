@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis.Diagnostics;
+﻿using Datacute.IncrementalGeneratorExtensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Datacute.EmbeddedResourcePropertyGenerator
 {
@@ -19,8 +21,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         public static GeneratorOptions Select(AnalyzerConfigOptionsProvider provider, CancellationToken token)
         {
-            if (token.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 7000);
-            token.ThrowIfCancellationRequested();
+            token.ThrowIfCancellationRequested(GeneratorStage.AnalyzerConfigOptionsProviderSelect);
             return new GeneratorOptions(provider.GlobalOptions);
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Datacute.EmbeddedResourcePropertyGenerator;
+using Datacute.IncrementalGeneratorExtensions;
 using Microsoft.CodeAnalysis;
 using Shouldly;
 
@@ -9,11 +10,9 @@ public class GeneratorTests
     private const string InputSource = /* language=c# */
         $$"""
           using Datacute.EmbeddedResourcePropertyGenerator;
-          namespace {{TestHelper.TestNamespace}}
-          {
-              [EmbeddedResourceProperties(".txt", "Queries", RegenerateDocCommentsWhileEditing = true, DiagnosticTraceLog = false)] // Ignore the cache
-              public static partial class Queries;
-          }
+          namespace {{TestHelper.TestNamespace}};
+          [EmbeddedResourceProperties(".txt", "Queries")]
+          public static partial class Queries;
           """;
 
     // Create a list to hold all additional texts
@@ -56,6 +55,7 @@ public class GeneratorTests
               #nullable enable
 
               namespace {{TestHelper.TestNamespace}};
+              
               /// <summary>
               /// This class's properties are generated from project files meeting the criteria:
               /// <list type="bullet">
@@ -132,7 +132,7 @@ public class GeneratorTests
     {
         // run the generator, passing in the inputs and the tracking names
         var (diagnostics, output1, output2)
-            = TestHelper.GetGeneratedOutput<EmbeddedResourcePropertiesAttribute, Generator>(
+            = TestHelper.GetGeneratedOutput<Generator>(
                 TestHelper.NoModification,
                 _additionalTexts,
                 TestHelper.GetTrackingNames<TrackingNames>(),
@@ -150,7 +150,7 @@ public class GeneratorTests
     {
         // run the generator, passing in the inputs and the tracking names
         var (diagnostics, output1, output2)
-            = TestHelper.GetGeneratedOutput<EmbeddedResourcePropertiesAttribute, Generator>(
+            = TestHelper.GetGeneratedOutput<Generator>(
                 TestHelper.NoModification,
                 _additionalTexts,
                 TestHelper.GetTrackingNames<TrackingNames>(),
@@ -178,27 +178,15 @@ public class GeneratorTests
     {
         // run the generator, passing in the inputs and the tracking names
         var (diagnostics, output1, output2)
-            = TestHelper.GetGeneratedOutput<EmbeddedResourcePropertiesAttribute, Generator>(
+            = TestHelper.GetGeneratedOutput<Generator>(
                 TestHelper.NoModification,
                 _additionalTexts,
                 [
+                    nameof(GeneratorStage.ForAttributeWithMetadataName),
                     nameof(TrackingNames.AnalyzerConfigOptions),
-                    nameof(TrackingNames.AttributeContextsCreated),
                     nameof(TrackingNames.AttributesAndOptionsCombined),
                     nameof(TrackingNames.AttributeGlobInfoSelected),
-                    nameof(TrackingNames.AttributeGlobsSelected),
-                    //nameof(TrackingNames.FileInfoSelected),
-                    //nameof(TrackingNames.FileInfoAndGlobsCombined),
-                    //nameof(TrackingNames.MatchingFilesFiltered),
-                    //nameof(TrackingNames.EmbeddedResourceExtracted),
-                    //nameof(TrackingNames.ResourceAndAllAttributeGlobsCombined),
-                    //nameof(TrackingNames.MatchingResourceAndAttributeSelected),
-                    //nameof(TrackingNames.ResourcesGroupedByAttributeContext),
-                    //nameof(TrackingNames.GenerationInputPrepared),
-                    //nameof(TrackingNames.GeneratingDocComment),
-                    //nameof(TrackingNames.GeneratingSourceFile),
-                    //nameof(TrackingNames.DiagnosticTraceLogWritten),
-
+                    nameof(TrackingNames.AttributeGlobsSelected)
                 ],
                 (driver, compilation) =>
                 {
@@ -246,26 +234,18 @@ public class GeneratorTests
     {
         // run the generator, passing in the inputs and the tracking names
         var (diagnostics, output1, output2)
-            = TestHelper.GetGeneratedOutput<EmbeddedResourcePropertiesAttribute, Generator>(
+            = TestHelper.GetGeneratedOutput<Generator>(
                 TestHelper.NoModification,
                 _additionalTexts,
                 [
-                    nameof(TrackingNames.AnalyzerConfigOptions),
-                    nameof(TrackingNames.AttributeContextsCreated),
+                    nameof(GeneratorStage.ForAttributeWithMetadataName),
+                    nameof(GeneratorStage.AnalyzerConfigOptionsProviderSelect),
                     nameof(TrackingNames.AttributesAndOptionsCombined),
                     nameof(TrackingNames.AttributeGlobInfoSelected),
                     nameof(TrackingNames.AttributeGlobsSelected),
-                    //nameof(TrackingNames.FileInfoSelected),
-                    //nameof(TrackingNames.FileInfoAndGlobsCombined),
-                    //nameof(TrackingNames.MatchingFilesFiltered),
-                    //nameof(TrackingNames.EmbeddedResourceExtracted),
-                    //nameof(TrackingNames.ResourceAndAllAttributeGlobsCombined),
                     nameof(TrackingNames.MatchingResourceAndAttributeSelected),
                     nameof(TrackingNames.ResourcesGroupedByAttributeContext),
-                    nameof(TrackingNames.GenerationInputPrepared),
-                    //nameof(TrackingNames.GeneratingDocComment),
-                    //nameof(TrackingNames.GeneratingSourceFile),
-                    //nameof(TrackingNames.DiagnosticTraceLogWritten),
+                    nameof(TrackingNames.GenerationInputPrepared)
                 ],
                 (driver, compilation) =>
                 {
@@ -304,7 +284,7 @@ public class GeneratorTests
     {
         // run the generator, passing in the inputs and the tracking names
         var (diagnostics, output1, output2)
-            = TestHelper.GetGeneratedOutput<EmbeddedResourcePropertiesAttribute, Generator>(
+            = TestHelper.GetGeneratedOutput<Generator>(
                 (driver, compilation) =>
                 {
                     var newOptions = new TestConfigOptionsProvider(true);
@@ -328,6 +308,7 @@ public class GeneratorTests
                        #nullable enable
 
                        namespace EmbeddedResourcePropertyGenerator.Tests;
+                       
                        public static partial class Queries
                        {
                            private static class EmbeddedResource

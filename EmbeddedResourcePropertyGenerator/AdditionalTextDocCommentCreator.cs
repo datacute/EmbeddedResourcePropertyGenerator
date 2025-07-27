@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Datacute.IncrementalGeneratorExtensions;
+using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Datacute.EmbeddedResourcePropertyGenerator;
@@ -20,8 +21,7 @@ public static class AdditionalTextDocCommentCreator
         var outputLines = 0;
         foreach (var textLine in textLineCollection)
         {
-            if (ct.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 9000);
-            ct.ThrowIfCancellationRequested();
+            ct.ThrowIfCancellationRequested(109);
 
             // Truncation happens after 10 lines
             // but if there are only 11 lines,

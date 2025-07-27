@@ -7,7 +7,7 @@ public class GeneratorSnapshotTests
 {
     private static Task Verify(string source, List<AdditionalText>? additionalTexts = null)
     {
-        return TestHelper.Verify<EmbeddedResourcePropertiesAttribute, Generator>(source, additionalTexts);
+        return TestHelper.Verify<Generator>(source, additionalTexts);
     }
 
     [Fact]

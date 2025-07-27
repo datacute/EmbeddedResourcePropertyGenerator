@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.CodeAnalysis;
 
 // ReSharper disable UnusedParameter.Local
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -72,8 +73,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator;
 /// </para>
 /// </remarks>
 [System.Diagnostics.Conditional("DATACUTE_EMBEDDEDRESOURCEPROPERTIES_USAGES")]
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-public sealed class EmbeddedResourcePropertiesAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true), Embedded]
+internal sealed class EmbeddedResourcePropertiesAttribute : Attribute
 {
     /// <value>The filename extension of the embedded resource files
     /// to include as properties, defaulting to ".txt".</value>
@@ -86,17 +87,7 @@ public sealed class EmbeddedResourcePropertiesAttribute : Attribute
     /// otherwise it is relative to the folder containing the class with this attribute.
     /// If the path is not specified, the class name is used.
     /// </remarks>
-    public string? Path { get; set; }
-    
-    /// <value>
-    /// Ignore the doc-comment cache and repeatedly read the embedded resource files to generate the doc-comments
-    /// </value>
-    /// <remarks>
-    /// To include doc-comments on properties, embedded resource file are read once and the doc-comments are cached.
-    /// The cache can be refreshed for embedded resource files matching this attributes path and extension,
-    /// by temporarily setting this property to true.
-    /// </remarks>
-    public bool RegenerateDocCommentsWhileEditing { get; set; }
+    public string Path { get; set; }
     
     /// <value>
     /// Output a diagnostic trace log as a comment at the end of the generated files
@@ -132,7 +123,7 @@ public sealed class EmbeddedResourcePropertiesAttribute : Attribute
     /// </summary>
     /// <param name="extension">The file name extension to include</param>
     /// <param name="path">The folder path to include</param>
-    public EmbeddedResourcePropertiesAttribute(string extension = ".txt", string? path = null)
+    public EmbeddedResourcePropertiesAttribute(string extension = ".txt", string path = null)
     {
         Extension = extension;
         Path = path;
