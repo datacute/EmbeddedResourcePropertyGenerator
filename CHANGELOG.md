@@ -2,12 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [[1.1.0]] - 2025-06-29
+### Changed
+
+- Converted to use Datacute.IncrementalGeneratorExtensions and Datacute.AdditionalTextConstantGenerator
+
+## [1.1.0] - 2025-06-29
 
 ### Added
 - Support for nested classes and generics
@@ -21,17 +25,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolves issue #4 (performance improvements)
 - Resolves issue #3 (nested classes and generics support)
 
-## [[1.0.0]] - 2024-10-28
+## [1.0.0] - 2024-10-28
 
 ### Added
 - First stable release
 
-## [[0.0.1-alpha.6b]] - 2024-09-24
+## [0.0.1-alpha.6b] - 2024-09-24
 
 ### Fixed
 - Corrected the published package (but the new version broke the doc links)
 
-## [[0.0.1-alpha.6]] - 2024-09-24
+## [0.0.1-alpha.6] - 2024-09-24
 
 ### Added
 - More documentation
@@ -39,12 +43,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Removed windows specific paths from tests
 
-## [[0.0.1-alpha.5]] - 2024-09-22
+## [0.0.1-alpha.5] - 2024-09-22
 
 ### Fixed
 - Included doc-comments of the EmbeddedResourceProperties attribute in the package
 
-## [[0.0.1-alpha.4]] - 2024-09-15
+## [0.0.1-alpha.4] - 2024-09-15
 
 ### Added
 - Read method in each class
@@ -53,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Moved the attribute to its own dll
 
-## [[0.0.1-alpha.3]] - 2024-09-14
+## [0.0.1-alpha.3] - 2024-09-14
 
 ### Added
 - Included `EmbeddedResourcePropertyExample` project in github repository
@@ -61,12 +65,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Removing doc duplication
 
-## [[0.0.1-alpha.2]] - 2024-09-13
+## [0.0.1-alpha.2] - 2024-09-13
 
 ### Added
 - `[Conditional]` attribute to restrict inclusion of the usage of the `EmbeddedResourcePropertiesAttribute` in the output
 
-## [[0.0.1-alpha]] - 2024-09-09
+## [0.0.1-alpha] - 2024-09-09
 
 ### Added
 - Support for overriding `ReadEmbeddedResourceValue` partial method

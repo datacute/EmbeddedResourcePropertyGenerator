@@ -35,11 +35,11 @@
         <Datacute_IncludeReadmeFile>true</Datacute_IncludeReadmeFile>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Datacute.AdditionalTextConstantGenerator" Version="0.0.1-alpha">
+        <PackageReference Include="Datacute.AdditionalTextConstantGenerator" Version="0.0.2-alpha">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Datacute.IncrementalGeneratorExtensions" Version="1.0.1">
+        <PackageReference Include="Datacute.IncrementalGeneratorExtensions" Version="1.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
