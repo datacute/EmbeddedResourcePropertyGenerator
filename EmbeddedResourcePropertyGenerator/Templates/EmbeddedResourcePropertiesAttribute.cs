@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.CodeAnalysis;
 
 // ReSharper disable UnusedParameter.Local
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -73,7 +72,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator;
 /// </para>
 /// </remarks>
 [System.Diagnostics.Conditional("DATACUTE_EMBEDDEDRESOURCEPROPERTIES_USAGES")]
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true), Embedded]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 internal sealed class EmbeddedResourcePropertiesAttribute : Attribute
 {
     /// <value>The filename extension of the embedded resource files

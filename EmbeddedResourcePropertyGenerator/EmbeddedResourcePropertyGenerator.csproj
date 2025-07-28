@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>10.0</LangVersion>
+        <LangVersion>10</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <IncludeBuildOutput>false</IncludeBuildOutput> <!-- Do not include the generator as a lib dependency in consuming projects -->
@@ -29,17 +29,15 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <DefineConstants>$(DefineConstants);DATACUTE_EXCLUDE_EMBEDDEDATTRIBUTE</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup>
         <Datacute_IncludeReadmeFile>true</Datacute_IncludeReadmeFile>
+        <DefineConstants>$(DefineConstants);DATACUTE_EXCLUDE_TABINDENTINGLINEAPPENDER</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Datacute.AdditionalTextConstantGenerator" Version="0.0.2-alpha">
+        <PackageReference Include="Datacute.AdditionalTextConstantGenerator" Version="1.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Datacute.IncrementalGeneratorExtensions" Version="1.0.2">
+        <PackageReference Include="Datacute.IncrementalGeneratorExtensions" Version="1.0.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

@@ -16,7 +16,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
             context.RegisterPostInitializationOutput(static postInitializationContext =>
             {
-                postInitializationContext.AddEmbeddedAttributeDefinition();
                 postInitializationContext.AddSource(
                     Templates.AttributeHintName,
                     Templates.EmbeddedResourcePropertiesAttribute);
