@@ -29,12 +29,6 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         {
             Token.ThrowIfCancellationRequested(102);
             Buffer.Clear();
-
-            GeneratePropertyNames();
-        }
-
-        private void GeneratePropertyNames()
-        {
             _propertyNames.Clear();
             foreach (var text in _embeddedResources)
             {
