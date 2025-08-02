@@ -11,13 +11,16 @@
 /// This class's properties are generated from project files meeting the criteria:
 /// <list type="bullet">
 /// <item>
-/// <description>they are both an <c>EmbeddedResource</c> and an <c>AdditionalFile</c></description>
+/// <description>they are an <c>EmbeddedResource</c></description>
 /// </item>
 /// <item>
 /// <description>they are in the project folder <c>Queries</c></description>
 /// </item>
 /// <item>
 /// <description>they have the extension <c>.txt</c></description>
+/// </item>
+/// <item>
+/// <description>Number of matching resources: 11</description>
 /// </item>
 /// </list>
 /// </summary>

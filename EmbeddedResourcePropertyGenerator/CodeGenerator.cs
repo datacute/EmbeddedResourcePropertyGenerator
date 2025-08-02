@@ -71,7 +71,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
             var path = _resourceSearchPath.Substring(_options.ProjectDir.Length)
                 .Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            Buffer.AppendFormatLines(Templates.ClassDocComments, path, _contextData.ExtensionArg);
+            Buffer.AppendFormatLines(Templates.ClassDocComments, path, _contextData.ExtensionArg, _propertyNames.Count);
         }
 
         protected override void AppendCustomMembers()

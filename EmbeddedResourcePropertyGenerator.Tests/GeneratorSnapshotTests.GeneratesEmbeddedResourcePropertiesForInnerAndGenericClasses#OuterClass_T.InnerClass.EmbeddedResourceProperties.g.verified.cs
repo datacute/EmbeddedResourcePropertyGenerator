@@ -13,13 +13,16 @@ public static partial class OuterClass<T>
     /// This class's properties are generated from project files meeting the criteria:
     /// <list type="bullet">
     /// <item>
-    /// <description>they are both an <c>EmbeddedResource</c> and an <c>AdditionalFile</c></description>
+    /// <description>they are an <c>EmbeddedResource</c></description>
     /// </item>
     /// <item>
     /// <description>they are in the project folder <c>InnerClass</c></description>
     /// </item>
     /// <item>
     /// <description>they have the extension <c>.txt</c></description>
+    /// </item>
+    /// <item>
+    /// <description>Number of matching resources: 1</description>
     /// </item>
     /// </list>
     /// </summary>
