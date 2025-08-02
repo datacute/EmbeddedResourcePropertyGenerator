@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Immutable;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
@@ -261,16 +262,19 @@ public static class TestHelper
         var compilation = GetCompilation<TGenerator>(source);
         driver = driver.RunGenerators(compilation);
 
-        return Verifier.Verify(driver).IgnoreGeneratedResult(result =>
-        {
-            switch (result.HintName)
+        return Verifier.Verify(driver)
+            .ScrubLinesWithReplace(line => 
+                Regex.Replace(line, @"Version: \d+\.\d+\.\d+\.\d+", "Version: 1.2.3.4"))
+            .IgnoreGeneratedResult(result =>
             {
-                case "Datacute.EmbeddedResourcePropertyGenerator.EmbeddedResourcePropertiesAttribute.g.cs":
-                case "Microsoft.CodeAnalysis.EmbeddedAttribute.cs":
-                    return true;
-                default:
-                    return false;
-            }
-        });
+                switch (result.HintName)
+                {
+                    case "Datacute.EmbeddedResourcePropertyGenerator.EmbeddedResourcePropertiesAttribute.g.cs":
+                    case "Microsoft.CodeAnalysis.EmbeddedAttribute.cs":
+                        return true;
+                    default:
+                        return false;
+                }
+            });
     }
 }

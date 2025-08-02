@@ -18,6 +18,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 		Pipelines.md = Pipelines.md
 		global.json = global.json
+		versionsuffix.ci.props = versionsuffix.ci.props
+		versionsuffix.local.props = versionsuffix.local.props
+		versionsuffix.release.props = versionsuffix.release.props
 	EndProjectSection
 EndProject
 Global
