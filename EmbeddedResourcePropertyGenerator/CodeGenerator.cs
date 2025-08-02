@@ -109,7 +109,9 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             {
                 Token.ThrowIfCancellationRequested(104);
                 var propertyName = kvp.Key;
-                Buffer.AppendLine(string.Format(Templates.BackingField, propertyName));
+                Buffer.AppendLine(NullableEnabled
+                    ? string.Format(Templates.BackingField, propertyName)
+                    : string.Format(Templates.BackingFieldNullableNotSupported, propertyName));
             }
 
             AppendEndBlock();
@@ -141,7 +143,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         private void AppendPartialMethods()
         {
-            Buffer.AppendLine(Templates.PartialReadMethods);
+            Buffer.AppendLine(NullableEnabled ? Templates.PartialReadMethods : Templates.PartialReadMethodsNullableNotSupported);
             Buffer.AppendLine(Templates.PartialAlterMethods);
         }
 

@@ -39,6 +39,9 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         public const string BackingField = /* language=c# */
             "public static string? {0};";
 
+        public const string BackingFieldNullableNotSupported = /* language=c# */
+            "public static string {0};";
+
         public const string ResourceNameClass = /* language=c# */
             "public static class ResourceName";
 
@@ -67,6 +70,9 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         public const string PartialReadMethods = /* language=c# */
             "static partial void ReadEmbeddedResourceValue(ref string? backingField, string resourceName, string propertyName);";
+
+        public const string PartialReadMethodsNullableNotSupported = /* language=c# */
+            "static partial void ReadEmbeddedResourceValue(ref string backingField, string resourceName, string propertyName);";
 
         public const string PartialAlterMethods = /* language=c# */
             "static partial void AlterEmbeddedResourceReturnValue(ref string value, string resourceName, string propertyName);";
