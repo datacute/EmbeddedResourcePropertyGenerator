@@ -11,11 +11,10 @@ public readonly record struct AttributeData
 
     public AttributeData(in GeneratorAttributeSyntaxContext generatorAttributeSyntaxContext)
     {
-        var attributeTargetSymbol = (ITypeSymbol)generatorAttributeSyntaxContext.TargetSymbol;
         var attributeData = generatorAttributeSyntaxContext.Attributes[0];
         var args = attributeData.ConstructorArguments;
         ExtensionArg = (args.Length == 0 ? null : args[0].Value as string) ?? ".txt";
-        PathArg = (args.Length < 2 ? null : args[1].Value as string) ?? attributeTargetSymbol.Name;
+        PathArg = (args.Length < 2 ? null : args[1].Value as string) ?? generatorAttributeSyntaxContext.TargetSymbol.Name;
         if (!attributeData.NamedArguments.IsEmpty)
         {
             foreach (KeyValuePair<string, TypedConstant> namedArgument in attributeData.NamedArguments)
@@ -53,4 +52,6 @@ public readonly record struct AttributeData
 
         FilePath = generatorAttributeSyntaxContext.TargetNode.SyntaxTree.FilePath;
     }
+    
+    public static AttributeData Collector(GeneratorAttributeSyntaxContext generatorAttributeSyntaxContext) => new(generatorAttributeSyntaxContext);
 }

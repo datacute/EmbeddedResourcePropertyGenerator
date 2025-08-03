@@ -264,7 +264,7 @@ public static class TestHelper
 
         return Verifier.Verify(driver)
             .ScrubLinesWithReplace(line => 
-                Regex.Replace(line, @"Version: \d+\.\d+\.\d+\.\d+", "Version: 1.2.3.4"))
+                Regex.Replace(line, @"Version: \d+\.\d+\.\d+", "Version: 1.2.3"))
             .IgnoreGeneratedResult(result =>
             {
                 switch (result.HintName)

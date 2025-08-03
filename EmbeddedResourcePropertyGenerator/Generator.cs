@@ -25,7 +25,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             var attributeContexts =
                 context.SelectAttributeContexts(
                     Templates.AttributeFullyQualified,
-                    generatorAttributeSyntaxContext => new AttributeData(generatorAttributeSyntaxContext));
+                    AttributeData.Collector);
 
             // 2. Options -> GeneratorOptions
             var options =
