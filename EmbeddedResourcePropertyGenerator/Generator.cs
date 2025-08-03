@@ -1,5 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Datacute.IncrementalGeneratorExtensions;
+using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 
 namespace Datacute.EmbeddedResourcePropertyGenerator
@@ -12,29 +12,33 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            LightweightTrace.Add((int)TrackingNames.GeneratorInitialized);
+            LightweightTrace.MethodEntry(GeneratorStage.Initialize);
 
-            // 1. Base attribute data -> AttributeContext
+            context.RegisterPostInitializationOutput(static postInitializationContext =>
+            {
+                postInitializationContext.AddSource(
+                    Templates.AttributeHintName,
+                    Templates.EmbeddedResourcePropertiesAttribute);
+            });
+
+            // 1. Base attribute data -> AttributeContextAndData<AttributeData>
             var attributeContexts =
-                context.SyntaxProvider
-                    .ForAttributeWithMetadataName(
-                        Templates.AttributeFullyQualified,
-                        predicate: (node, _) => node is TypeDeclarationSyntax,
-                        transform: (attributeSyntaxContext, _) => new AttributeContext(attributeSyntaxContext))
-                    .Trace(TrackingNames.AttributeContextsCreated);
+                context.SelectAttributeContexts(
+                    Templates.AttributeFullyQualified,
+                    AttributeData.Collector);
 
             // 2. Options -> GeneratorOptions
             var options =
                 context.AnalyzerConfigOptionsProvider
                     .Select(GeneratorOptions.Select)
-                    .Trace(TrackingNames.AnalyzerConfigOptions);
+                    .WithTrackingName(GeneratorStage.AnalyzerConfigOptionsProviderSelect);
 
             // 3. Combine base attributes and options -> (AttributeContext, GeneratorOptions)
             var attributesAndOptions =
                 attributeContexts
                     .Combine(options)
                     .Select(SelectAttributeAndOptions)
-                    .Trace(TrackingNames.AttributesAndOptionsCombined);
+                    .WithTrackingName(TrackingNames.AttributesAndOptionsCombined);
 
             // --- Prepare Resource Matching Data Separately ---
 
@@ -42,37 +46,33 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             var attributesAndGlobs =
                 attributesAndOptions
                     .Select(SelectAttributesAndGlobs)
-                    .Trace(TrackingNames.AttributeGlobInfoSelected);
+                    .WithTrackingName(TrackingNames.AttributeGlobInfoSelected);
 
             // Selects (Path, Extension) from (AttributeContext, Path, Extension)
             var attributeGlobs =
                 attributesAndGlobs
                     .Select(SelectJustGlobs)
-                    .Trace(TrackingNames.AttributeGlobsSelected);
+                    .WithTrackingName(TrackingNames.AttributeGlobsSelected);
 
             // 4. Find all (AttributeContext, EmbeddedResource) matches
-            var matchedResourceAndAttribute =
+            var resourcesByAttributeContextLookup =
                 context.AdditionalTextsProvider
                     .Select(SelectFileInfo)
-                    .Trace(TrackingNames.FileInfoSelected)
+                    .WithTrackingName(GeneratorStage.AdditionalTextsProviderSelect)
                     .CombineEquatable(attributeGlobs)
-                    .Trace(TrackingNames.FileInfoAndGlobsCombined)
+                    .WithTrackingName(TrackingNames.FileInfoAndGlobsCombined)
                     .Select(SelectAdditionalTextAndGlobWithAttributeGlobs)
                     .Where(DoesAdditionalTextGlobMatchAnyAttributeGlobs)
-                    .Trace(TrackingNames.MatchingFilesFiltered)
+                    .WithTrackingName(TrackingNames.MatchingFilesFiltered)
                     .Select(ExtractEmbeddedResourceWithFileInfo)
-                    .Trace(TrackingNames.EmbeddedResourceExtracted)
+                    .WithTrackingName(TrackingNames.EmbeddedResourceExtracted)
                     .CombineEquatable(attributesAndGlobs)
-                    .Trace(TrackingNames.ResourceAndAllAttributeGlobsCombined)
+                    .WithTrackingName(TrackingNames.ResourceAndAllAttributeGlobsCombined)
                     .SelectMany(SelectMatchingResourceAndAttribute)
-                    .Trace(TrackingNames.MatchingResourceAndAttributeSelected);
-
-            // 5. Group resources by AttributeContext into a lookup
-            var resourcesByAttributeContextLookup =
-                matchedResourceAndAttribute
-                    .Collect().Select(EquatableImmutableArray<AttributeAndResource>.Create)
+                    .WithTrackingName(TrackingNames.MatchingResourceAndAttributeSelected)
+                    .CollectEquatable()
                     .Select(GroupResourcesByAttributeContext)
-                    .Trace(TrackingNames.ResourcesGroupedByAttributeContext);
+                    .WithTrackingName(TrackingNames.ResourcesGroupedByAttributeContext);
 
             // --- Combine Base Attributes with Grouped Resources (Left Join) ---
 
@@ -81,29 +81,32 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                 attributesAndOptions
                     .Combine(resourcesByAttributeContextLookup)
                     .Select(PerformResourceLookup)
-                    .Trace(TrackingNames.GenerationInputPrepared);
+                    .WithTrackingName(TrackingNames.GenerationInputPrepared);
 
             // 7. Register Source Output
-            context.RegisterSourceOutput(generationInput,
+            context.RegisterSourceOutput(
+                generationInput,
                 (sourceProductionContext, inputData) =>
                 {
-                    LightweightTrace.Add((int)TrackingNames.GeneratingSourceFile);
+                    LightweightTrace.Add(GeneratorStage.RegisterSourceOutput);
                     var (attributeContext, generatorOptions, embeddedResources) = inputData;
                     GenerateFolderEmbed(sourceProductionContext, attributeContext, embeddedResources, generatorOptions);
                 });
+
+            LightweightTrace.MethodExit(GeneratorStage.Initialize);
         }
 
         // --- Helper Methods ---
 
         // Selects (AdditionalText, Directory, Extension) from AdditionalText
-        private static AttributeAndOptions SelectAttributeAndOptions((AttributeContext AttributeContext, GeneratorOptions Options) attributeAndOptions, CancellationToken _) =>
+        private static AttributeAndOptions SelectAttributeAndOptions((AttributeContextAndData<AttributeData> AttributeContext, GeneratorOptions Options) attributeAndOptions, CancellationToken _) =>
             new(attributeAndOptions.AttributeContext, attributeAndOptions.Options);
 
         // Selects (AttributeContext, Path, Extension) from (AttributeContext, Options)
         private static AttributeAndGlob SelectAttributesAndGlobs(AttributeAndOptions attributeAndOptions, CancellationToken ct)
         {
-            var resourceSearchPath = GetResourceSearchPath(attributeAndOptions.AttributeContext, attributeAndOptions.Options);
-            var glob = new Glob(resourceSearchPath, attributeAndOptions.AttributeContext.ExtensionArg);
+            var resourceSearchPath = GetResourceSearchPath(attributeAndOptions.AttributeContext.AttributeData, attributeAndOptions.Options);
+            var glob = new Glob(resourceSearchPath, attributeAndOptions.AttributeContext.AttributeData.ExtensionArg);
             return new AttributeAndGlob(attributeAndOptions.AttributeContext, glob);
         }
 
@@ -139,11 +142,10 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             AdditionalTextAndGlobWithAttributeGlobs additionalTextAndGlobWithAttributeGlobs, 
             CancellationToken ct)
         {
-            if (ct.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 8000);
-            ct.ThrowIfCancellationRequested();
+            ct.ThrowIfCancellationRequested(TrackingNames.GeneratingDocComment);
 
             var additionalText = additionalTextAndGlobWithAttributeGlobs.AdditionalTextAndGlob.AdditionalText;
-            LightweightTrace.Add((int)TrackingNames.GeneratingDocComment + additionalText.Path.Length * 1000);
+            LightweightTrace.Add(TrackingNames.GeneratingDocComment, additionalText.Path.Length);
 
             var docCommentCode = AdditionalTextDocCommentCreator.GenerateDocCommentCode(additionalText, ct);
             var embeddedResource = new EmbeddedResource(additionalText.Path, docCommentCode);
@@ -174,10 +176,10 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         }
 
         // Groups the collected (AttributeContext, EmbeddedResource) into a dictionary lookup
-        private static Dictionary<AttributeContext, EquatableImmutableArray<EmbeddedResource>> GroupResourcesByAttributeContext(
+        private static Dictionary<AttributeContextAndData<AttributeData>, EquatableImmutableArray<EmbeddedResource>> GroupResourcesByAttributeContext(
             EquatableImmutableArray<AttributeAndResource> resourceAndAttribute, CancellationToken ct)
         {
-            var grouped = new Dictionary<AttributeContext, ImmutableArray<EmbeddedResource>.Builder>();
+            var grouped = new Dictionary<AttributeContextAndData<AttributeData>, ImmutableArray<EmbeddedResource>.Builder>();
             foreach (var (context, resource) in resourceAndAttribute)
             {
                 ct.ThrowIfCancellationRequested();
@@ -198,7 +200,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         private static AttributeOptionsAndResources PerformResourceLookup(
             (
                 AttributeAndOptions AttributeAndOptions,
-                Dictionary<AttributeContext, EquatableImmutableArray<EmbeddedResource>> ResourcesByAttributeContextLookup
+                Dictionary<AttributeContextAndData<AttributeData>, EquatableImmutableArray<EmbeddedResource>> ResourcesByAttributeContextLookup
             ) attributeOptionsAndLookup,
             CancellationToken _)
         {
@@ -215,34 +217,34 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         private static void GenerateFolderEmbed(
             in SourceProductionContext context,
-            in AttributeContext attributeContext,
+            in AttributeContextAndData<AttributeData> attributeContextAndData,
             EquatableImmutableArray<EmbeddedResource> embeddedResources,
             in GeneratorOptions options)
         {
             var cancellationToken = context.CancellationToken;
-            if (cancellationToken.IsCancellationRequested) LightweightTrace.Add((int)TrackingNames.Cancel + 1000);
-            cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested(GeneratorStage.SourceProductionContextAddSource);
 
-            var resourceSearchPath = GetResourceSearchPath(attributeContext, options);
+            var resourceSearchPath = GetResourceSearchPath(attributeContextAndData.AttributeData, options);
 
             var codeGenerator = new CodeGenerator(
-                attributeContext,
+                attributeContextAndData,
                 resourceSearchPath,
                 embeddedResources,
                 options,
                 cancellationToken);
 
-            var hintName = attributeContext.DisplayString.GetHintName();
-            var source = codeGenerator.GenerateSource();
+            var hintName = attributeContextAndData.CreateHintName("EmbeddedResourceProperties");
+            var source = codeGenerator.GetSourceText();
+            LightweightTrace.Add(GeneratorStage.SourceProductionContextAddSource);
             context.AddSource(hintName, source);
         }
 
-        private static string GetResourceSearchPath(in AttributeContext attributeContext, in GeneratorOptions options)
+        private static string GetResourceSearchPath(in AttributeData attributeData, in GeneratorOptions options)
         {
             string baseDir;
             string resourceSearchPath;
 
-            var pathArg = attributeContext.PathArg;
+            var pathArg = attributeData.PathArg;
 
             if (pathArg.StartsWith("/") || pathArg.StartsWith("\\"))
             {
@@ -251,7 +253,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             }
             else
             {
-                baseDir = Path.GetDirectoryName(attributeContext.FilePath) ?? string.Empty;
+                baseDir = Path.GetDirectoryName(attributeData.FilePath) ?? string.Empty;
                 resourceSearchPath = pathArg;
             }
 
@@ -266,12 +268,12 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         }
     }
 
-    public record struct AttributeAndOptions(AttributeContext AttributeContext, GeneratorOptions Options);
+    public record struct AttributeAndOptions(AttributeContextAndData<AttributeData> AttributeContext, GeneratorOptions Options);
     public record struct Glob(string? Directory, string Extension);
-    public record struct AttributeAndGlob(AttributeContext AttributeContext, Glob Glob);
+    public record struct AttributeAndGlob(AttributeContextAndData<AttributeData> AttributeContext, Glob Glob);
     public record struct AdditionalTextAndGlob(AdditionalText AdditionalText, Glob Glob);
     public record struct AdditionalTextGlobsAndResources(AdditionalTextAndGlobWithAttributeGlobs FileAndGlobs, EmbeddedResource EmbeddedResource);
     public record struct AdditionalTextAndGlobWithAttributeGlobs(AdditionalTextAndGlob AdditionalTextAndGlob, EquatableImmutableArray<Glob> AttributeGlobs);
-    public record struct AttributeAndResource(AttributeContext AttributeContext, EmbeddedResource Resource);
-    public record struct AttributeOptionsAndResources(AttributeContext Context, GeneratorOptions Options, EquatableImmutableArray<EmbeddedResource> Resources);
+    public record struct AttributeAndResource(AttributeContextAndData<AttributeData> AttributeContext, EmbeddedResource Resource);
+    public record struct AttributeOptionsAndResources(AttributeContextAndData<AttributeData> Context, GeneratorOptions Options, EquatableImmutableArray<EmbeddedResource> Resources);
 }

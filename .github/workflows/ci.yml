@@ -35,28 +35,36 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore $SOLUTION
-
-    - name: Build
-      run: dotnet build $SOLUTION --configuration $BUILD_CONFIG --no-restore
-
-    - name: Run tests
-      run: dotnet test --configuration $BUILD_CONFIG --no-restore --no-build --verbosity normal
-
-    - name: Pack NuGet packages
-      run: |
-        dotnet pack $SOLUTION --configuration $BUILD_CONFIG --no-build --output ./artifacts
-        echo "=== Packages created ==="
-        ls -la ./artifacts/
-
     - name: Get tag for current commit
       id: get_tag
       # Check for tags when triggered by main branch push (with tag) or direct tag push
       # Can't use github.ref_name because it's "main" when pushing branch+tag together
       if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
       uses: olegtarasov/get-tag@v2.1.4
-      
+
+    - name: Set Version Profile
+      run: |
+        if [[ "${{ steps.get_tag.outputs.tag }}" != "" ]]; then
+          echo "VERSION_PROFILE=release" >> $GITHUB_ENV
+        else
+          echo "VERSION_PROFILE=ci" >> $GITHUB_ENV
+        fi
+    
+    - name: Restore dependencies
+      run: dotnet restore $SOLUTION
+
+    - name: Build
+      run: dotnet build $SOLUTION --configuration $BUILD_CONFIG --no-restore -p:GeneratePackageOnBuild=false -p:VersionProfile=${{ env.VERSION_PROFILE }}
+
+    - name: Run tests
+      run: dotnet test --configuration $BUILD_CONFIG --no-restore --no-build --verbosity normal -p:VersionProfile=${{ env.VERSION_PROFILE }}
+
+    - name: Pack NuGet packages
+      run: |
+        dotnet pack $SOLUTION --configuration $BUILD_CONFIG --no-build --output ./artifacts -p:VersionProfile=${{ env.VERSION_PROFILE }}
+        echo "=== Packages created ==="
+        ls -la ./artifacts/
+
     - name: Extract release notes from CHANGELOG.md
       if: steps.get_tag.outputs.tag != ''
       id: extract_notes

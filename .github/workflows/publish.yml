@@ -21,8 +21,8 @@ jobs:
     - name: Restore, Build, and Pack
       run: |
         dotnet restore *.sln
-        dotnet build *.sln --configuration Release --no-restore
-        dotnet pack *.sln --configuration Release --no-build --output ./artifacts
+        dotnet build *.sln --configuration Release --no-restore  -p:ContinuousIntegrationBuild=true  -p:GeneratePackageOnBuild=false -p:VersionProfile=release
+        dotnet pack *.sln --configuration Release --no-build --output ./artifacts  -p:ContinuousIntegrationBuild=true -p:VersionProfile=release
 
     - name: Publish to NuGet
       run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

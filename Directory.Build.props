@@ -7,7 +7,7 @@
 		<Copyright>Copyright © Stephen Denne 2024, 2025</Copyright>
 		<Company>Datacute</Company>
 		<PackageProjectUrl>https://github.com/datacute/EmbeddedResourcePropertyGenerator</PackageProjectUrl>
-        <PackageReleaseNotes>See full release notes and changelog: $(PackageProjectUrl)/blob/main/CHANGELOG.md</PackageReleaseNotes>
+		<PackageReleaseNotes>See full release notes and changelog: $(PackageProjectUrl)/blob/main/CHANGELOG.md</PackageReleaseNotes>
 		<CheckEolTargetFramework>false</CheckEolTargetFramework>
 	</PropertyGroup>
 

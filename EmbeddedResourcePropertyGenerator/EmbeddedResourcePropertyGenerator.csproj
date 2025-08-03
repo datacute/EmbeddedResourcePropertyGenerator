@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>10.0</LangVersion>
+        <LangVersion>10</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <IncludeBuildOutput>false</IncludeBuildOutput> <!-- Do not include the generator as a lib dependency in consuming projects -->
@@ -28,7 +28,19 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <Datacute_IncludeReadmeFile>true</Datacute_IncludeReadmeFile>
+        <DefineConstants>$(DefineConstants);DATACUTE_EXCLUDE_TABINDENTINGLINEAPPENDER</DefineConstants>
+    </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Datacute.AdditionalTextConstantGenerator" Version="1.0.2">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Datacute.IncrementalGeneratorExtensions" Version="1.0.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" PrivateAssets="all" />
     </ItemGroup>
 
@@ -36,16 +48,13 @@
         <!-- Pack the generator dll in the analyzers/dotnet/cs path -->
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
-        <!-- Pack the attributes dll in the lib\netstandard2.0 path -->
-        <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="false" />
-        <None Include="$(OutputPath)\Datacute.EmbeddedResourcePropertyGenerator.Attributes.xml" Pack="true" PackagePath="lib\netstandard2.0" Visible="false" />
-
         <None Include="./Datacute.EmbeddedResourcePropertyGenerator.props" Pack="true" PackagePath="build" Visible="true" />
 
         <None Include="../README.md" Pack="true" PackagePath="" Visible="false" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\EmbeddedResourcePropertyGenerator.Attributes\EmbeddedResourcePropertyGenerator.Attributes.csproj" PrivateAssets="All" />
+        <Compile Remove="Templates/EmbeddedResourcePropertiesAttribute.cs" />
+        <AdditionalFiles Include="Templates/EmbeddedResourcePropertiesAttribute.cs" />
     </ItemGroup>
 </Project>

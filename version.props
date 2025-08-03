@@ -1,7 +1,14 @@
 <Project>
 	<PropertyGroup>
-		<VersionPrefix>1.1.0</VersionPrefix>
-		<PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
-		<PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
+		<VersionPrefix>1.1.1</VersionPrefix>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- Default to 'local' if no profile is specified -->
+		<VersionProfile Condition=" '$(VersionProfile)' == '' ">local</VersionProfile>
+	</PropertyGroup>
+
+	<!-- Import the correct versioning file based on the profile -->
+	<Import Project="versionsuffix.$(VersionProfile).props" />
+
 </Project>
