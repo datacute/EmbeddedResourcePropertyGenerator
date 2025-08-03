@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### Added
+- Included a count of the matching embedded resources in the generated class doc-comments
 
+### Changed
 - Converted to use Datacute.IncrementalGeneratorExtensions and Datacute.AdditionalTextConstantGenerator
+
+### Fixed
+- Fixed nullable reference type support for older .NET versions that don't support nullable annotations
+- Removed file-scoped namespace from attribute for better compatibility with older C# versions
 
 ## [1.1.0] - 2025-06-29
 
