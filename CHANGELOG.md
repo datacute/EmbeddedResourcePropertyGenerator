@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2025-08-03
+
 ### Added
 - Included a count of the matching embedded resources in the generated class doc-comments
 
@@ -81,13 +83,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support for overriding `ReadEmbeddedResourceValue` partial method
 
-[Unreleased]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/1.1.0...HEAD
-[1.1.0]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/1.0.0...1.1.0
-[1.0.0]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.6b...1.0.0
-[0.0.1-alpha.6b]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.6...0.0.1-alpha.6b
-[0.0.1-alpha.6]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.5...0.0.1-alpha.6
-[0.0.1-alpha.5]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.4...0.0.1-alpha.5
-[0.0.1-alpha.4]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.3...0.0.1-alpha.4
-[0.0.1-alpha.3]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha.2...0.0.1-alpha.3
-[0.0.1-alpha.2]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/0.0.1-alpha...0.0.1-alpha.2
+[Unreleased]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/1.1.1...HEAD
+[1.1.1]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/1.1.1
+[1.1.0]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/1.1.0
+[1.0.0]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/1.0.0
+[0.0.1-alpha.6b]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/0.0.1-alpha.6b
+[0.0.1-alpha.6]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/0.0.1-alpha.6
+[0.0.1-alpha.5]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/0.0.1-alpha.5
+[0.0.1-alpha.4]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/0.0.1-alpha.4
+[0.0.1-alpha.3]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/0.0.1-alpha.3
+[0.0.1-alpha.2]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/0.0.1-alpha.2
 [0.0.1-alpha]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/0.0.1-alpha
