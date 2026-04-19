@@ -114,7 +114,7 @@ The generated code includes a private nested class `EmbeddedResource` containing
 | Method or Class | Purpose |
 |-----------------|---------|
 | `Read(string resourceName)` | Method for reading embedded resources |
-| `BackingField` | Nested class caching the property values |
+| `BackingField` | Nested class caching the property values (omitted on C# 14+, which uses the `field` keyword instead) |
 | `ResourceName` | Nested class holding the resource names |
 
 The implementation supports including two ***partial methods*** that can
@@ -126,6 +126,13 @@ and the code effectively reduces to:
 ```csharp
 public static string Example =>
         EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+```
+
+On C# 14 and later, the `field` keyword is used instead:
+
+```csharp
+public static string Example =>
+        field ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
 ```
 
 ### Partial methods:
@@ -201,6 +208,8 @@ public static string Example
     }
 }
 ```
+
+On C# 14 and later, `EmbeddedResource.BackingField.Example` is replaced with the `field` keyword.
 
 ## Diagnostics
 The source generator traces its behaviour using code based on https://github.com/datacute/LightweightTracing

@@ -30,6 +30,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             // 2. Options -> GeneratorOptions
             var options =
                 context.AnalyzerConfigOptionsProvider
+                    .Combine(context.ParseOptionsProvider)
                     .Select(GeneratorOptions.Select)
                     .WithTrackingName(GeneratorStage.AnalyzerConfigOptionsProviderSelect);
 

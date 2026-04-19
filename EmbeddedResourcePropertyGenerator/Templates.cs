@@ -35,6 +35,12 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         public const string BackingFieldNullableNotSupported = /* language=c# */
             "public static string {0};";
 
+        public const string BackingFieldAccess = /* language=c# */
+            "EmbeddedResource.BackingField.{0}";
+
+        public const string FieldKeywordAccess = /* language=c# */
+            "field";
+
         public const string ResourceNameClass = /* language=c# */
             "public static class ResourceName";
 
@@ -84,8 +90,8 @@ public static string {1}
 {{
 {0}get
 {0}{{
-{0}{0}ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.{1}, EmbeddedResource.ResourceName.{1}, ""{1}"");
-{0}{0}var value = EmbeddedResource.BackingField.{1} ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.{1});
+{0}{0}ReadEmbeddedResourceValue(ref {4}, EmbeddedResource.ResourceName.{1}, ""{1}"");
+{0}{0}var value = {4} ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.{1});
 {0}{0}AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.{1}, ""{1}"");
 {0}{0}return value;
 {0}}}

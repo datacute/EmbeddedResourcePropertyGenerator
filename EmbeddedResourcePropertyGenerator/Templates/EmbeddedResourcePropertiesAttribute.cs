@@ -21,7 +21,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     /// <list type="table">
     /// <listheader><term>Method or Class</term><description>Purpose</description></listheader>
     /// <item><term><c>Read(string resourceName)</c></term><description>Method for reading embedded resources</description></item>
-    /// <item><term><c>BackingField</c></term><description>Nested class caching the property values</description></item>
+    /// <item><term><c>BackingField</c></term><description>Nested class caching the property values (omitted on C# 14 and later, which uses the <c>field</c> keyword directly)</description></item>
     /// <item><term><c>ResourceName</c></term><description>Nested class holding the resource names</description></item>
     /// </list>
     /// </para>
@@ -34,6 +34,11 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     /// <code>
     /// public static string Example =&gt;
     ///         EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+    /// </code>
+    /// On C# 14 and later, the <c>field</c> keyword is used instead:
+    /// <code>
+    /// public static string Example =&gt;
+    ///         field ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
     /// </code>
     /// </para>
     /// <para>
@@ -69,6 +74,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     ///     }
     /// }
     /// </code>
+    /// On C# 14 and later, <c>EmbeddedResource.BackingField.Example</c> is replaced with the <c>field</c> keyword.
     /// </para>
     /// </remarks>
     [System.Diagnostics.Conditional("DATACUTE_EMBEDDEDRESOURCEPROPERTIES_USAGES")]

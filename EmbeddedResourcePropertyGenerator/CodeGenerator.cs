@@ -98,6 +98,8 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         private void AppendBackingFields()
         {
+            if (_options.SupportsFieldKeyword) return;
+
             if (_options.IsDesignTimeBuild) return;
 
             Buffer.AppendLine(Templates.BackingFieldClass);
@@ -167,11 +169,15 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
                     }
 
                     var resourceFileName = text.Path.GetFileName();
+                    var backingField = _options.SupportsFieldKeyword
+                        ? Templates.FieldKeywordAccess
+                        : string.Format(Templates.BackingFieldAccess, propertyName);
                     Buffer.AppendFormatLines(Templates.PropertyTemplate,
                         Buffer.SingleIndent,
                         propertyName,
                         resourceFileName,
-                        docCommentCode);
+                        docCommentCode,
+                        backingField);
                 }
             }
         }
