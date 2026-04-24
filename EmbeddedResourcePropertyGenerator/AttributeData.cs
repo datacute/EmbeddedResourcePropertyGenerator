@@ -2,19 +2,19 @@
 
 namespace Datacute.EmbeddedResourcePropertyGenerator;
 
-public readonly record struct AttributeData
+public readonly record struct AttributeData(
+    string ExtensionArg,
+    string PathArg,
+    bool OutputDiagnosticTraceLog,
+    string FilePath)
 {
-    public readonly string ExtensionArg;
-    public readonly string PathArg;
-    public readonly bool OutputDiagnosticTraceLog = false;
-    public readonly string FilePath;
-
-    public AttributeData(in GeneratorAttributeSyntaxContext generatorAttributeSyntaxContext)
+    public static AttributeData Collector(GeneratorAttributeSyntaxContext generatorAttributeSyntaxContext)
     {
         var attributeData = generatorAttributeSyntaxContext.Attributes[0];
         var args = attributeData.ConstructorArguments;
-        ExtensionArg = (args.Length == 0 ? null : args[0].Value as string) ?? ".txt";
-        PathArg = (args.Length < 2 ? null : args[1].Value as string) ?? generatorAttributeSyntaxContext.TargetSymbol.Name;
+        var extensionArg = (args.Length == 0 ? null : args[0].Value as string) ?? ".txt";
+        var pathArg = (args.Length < 2 ? null : args[1].Value as string) ?? generatorAttributeSyntaxContext.TargetSymbol.Name;
+        var outputDiagnosticTraceLog = false;
         if (!attributeData.NamedArguments.IsEmpty)
         {
             foreach (KeyValuePair<string, TypedConstant> namedArgument in attributeData.NamedArguments)
@@ -28,30 +28,26 @@ public readonly record struct AttributeData
                             switch (namedArgument.Key)
                             {
                                 case "DiagnosticTraceLog":
-                                    OutputDiagnosticTraceLog = boolValue;
+                                    outputDiagnosticTraceLog = boolValue;
                                     break;
                             }
-
                             break;
                         case string stringValue:
                             switch (namedArgument.Key)
                             {
                                 case "Extension":
-                                    ExtensionArg = stringValue;
+                                    extensionArg = stringValue;
                                     break;
                                 case "Path":
-                                    PathArg = stringValue;
+                                    pathArg = stringValue;
                                     break;
                             }
-
                             break;
                     }
                 }
             }
         }
-
-        FilePath = generatorAttributeSyntaxContext.TargetNode.SyntaxTree.FilePath;
+        var filePath = generatorAttributeSyntaxContext.TargetNode.SyntaxTree.FilePath;
+        return new AttributeData(extensionArg, pathArg, outputDiagnosticTraceLog, filePath);
     }
-    
-    public static AttributeData Collector(GeneratorAttributeSyntaxContext generatorAttributeSyntaxContext) => new(generatorAttributeSyntaxContext);
 }

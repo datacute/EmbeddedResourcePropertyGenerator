@@ -140,7 +140,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
 
         // Extracts EmbeddedResource content, keeping the original file+glob info
         private static AdditionalTextGlobsAndResources ExtractEmbeddedResourceWithFileInfo(
-            AdditionalTextAndGlobWithAttributeGlobs additionalTextAndGlobWithAttributeGlobs, 
+            AdditionalTextAndGlobWithAttributeGlobs additionalTextAndGlobWithAttributeGlobs,
             CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested(TrackingNames.GeneratingDocComment);
@@ -269,12 +269,12 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
         }
     }
 
-    public record struct AttributeAndOptions(AttributeContextAndData<AttributeData> AttributeContext, GeneratorOptions Options);
-    public record struct Glob(string? Directory, string Extension);
-    public record struct AttributeAndGlob(AttributeContextAndData<AttributeData> AttributeContext, Glob Glob);
-    public record struct AdditionalTextAndGlob(AdditionalText AdditionalText, Glob Glob);
-    public record struct AdditionalTextGlobsAndResources(AdditionalTextAndGlobWithAttributeGlobs FileAndGlobs, EmbeddedResource EmbeddedResource);
-    public record struct AdditionalTextAndGlobWithAttributeGlobs(AdditionalTextAndGlob AdditionalTextAndGlob, EquatableImmutableArray<Glob> AttributeGlobs);
-    public record struct AttributeAndResource(AttributeContextAndData<AttributeData> AttributeContext, EmbeddedResource Resource);
-    public record struct AttributeOptionsAndResources(AttributeContextAndData<AttributeData> Context, GeneratorOptions Options, EquatableImmutableArray<EmbeddedResource> Resources);
+    public readonly record struct AttributeAndOptions(AttributeContextAndData<AttributeData> AttributeContext, GeneratorOptions Options);
+    public readonly record struct Glob(string? Directory, string Extension);
+    public readonly record struct AttributeAndGlob(AttributeContextAndData<AttributeData> AttributeContext, Glob Glob);
+    public readonly record struct AdditionalTextAndGlob(AdditionalText AdditionalText, Glob Glob);
+    public readonly record struct AdditionalTextGlobsAndResources(AdditionalTextAndGlobWithAttributeGlobs FileAndGlobs, EmbeddedResource EmbeddedResource);
+    public readonly record struct AdditionalTextAndGlobWithAttributeGlobs(AdditionalTextAndGlob AdditionalTextAndGlob, EquatableImmutableArray<Glob> AttributeGlobs);
+    public readonly record struct AttributeAndResource(AttributeContextAndData<AttributeData> AttributeContext, EmbeddedResource Resource);
+    public readonly record struct AttributeOptionsAndResources(AttributeContextAndData<AttributeData> Context, GeneratorOptions Options, EquatableImmutableArray<EmbeddedResource> Resources);
 }

@@ -40,7 +40,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
             }
         }
 
-        private void RecordPropertyNameForResource(string propertyName, EmbeddedResource text)
+        private void RecordPropertyNameForResource(string propertyName, in EmbeddedResource text)
         {
             // finding "Classname.txt" (converted to "Classname_txt")
             // before an actual "Classname_txt.txt"
