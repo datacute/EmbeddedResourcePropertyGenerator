@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Generated properties now use the C# `field` keyword on compilers that support it (C# 14+), eliminating explicit backing fields
+
 ## [1.1.1] - 2025-08-03
 
 ### Added

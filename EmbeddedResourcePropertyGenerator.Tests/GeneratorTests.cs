@@ -139,7 +139,7 @@ public class GeneratorTests
             = TestHelper.GetGeneratedOutput<Generator>(
                 TestHelper.NoModification,
                 _additionalTexts,
-                TestHelper.GetTrackingNames<TrackingNames>(),
+                Enum.GetNames<TrackingNames>(),
                 TestHelper.NoModification,
                 InputSource);
 
@@ -157,7 +157,7 @@ public class GeneratorTests
             = TestHelper.GetGeneratedOutput<Generator>(
                 TestHelper.NoModification,
                 _additionalTexts,
-                TestHelper.GetTrackingNames<TrackingNames>(),
+                Enum.GetNames<TrackingNames>(),
                 (driver, compilation) =>
                 {
                     // The second additional text (with index 1) is not matched by the attribute

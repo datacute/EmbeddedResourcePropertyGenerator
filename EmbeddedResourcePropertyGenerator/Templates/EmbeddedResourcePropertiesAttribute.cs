@@ -21,7 +21,7 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     /// <list type="table">
     /// <listheader><term>Method or Class</term><description>Purpose</description></listheader>
     /// <item><term><c>Read(string resourceName)</c></term><description>Method for reading embedded resources</description></item>
-    /// <item><term><c>BackingField</c></term><description>Nested class caching the property values</description></item>
+    /// <item><term><c>BackingField</c></term><description>Nested class caching the property values (generated on C# versions prior to C# 14, which lack the <c>field</c> keyword)</description></item>
     /// <item><term><c>ResourceName</c></term><description>Nested class holding the resource names</description></item>
     /// </list>
     /// </para>
@@ -31,6 +31,11 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     /// </para>
     /// <para>
     /// If the partial methods are not implemented, the code effectively reduces to:
+    /// <code>
+    /// public static string Example =&gt;
+    ///         field ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+    /// </code>
+    /// On C# versions prior to C# 14, a <c>BackingField</c> nested class is generated and used instead:
     /// <code>
     /// public static string Example =&gt;
     ///         EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
@@ -62,13 +67,14 @@ namespace Datacute.EmbeddedResourcePropertyGenerator
     /// {
     ///     get
     ///     {
-    ///         ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.Example, EmbeddedResource.ResourceName.Example, "Example");
-    ///         var value = EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+    ///         ReadEmbeddedResourceValue(ref field, EmbeddedResource.ResourceName.Example, "Example");
+    ///         var value = field ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
     ///         AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.Example, "Example");
     ///         return value;
     ///     }
     /// }
     /// </code>
+    /// On C# versions prior to C# 14, <c>field</c> is replaced with <c>EmbeddedResource.BackingField.Example</c>.
     /// </para>
     /// </remarks>
     [System.Diagnostics.Conditional("DATACUTE_EMBEDDEDRESOURCEPROPERTIES_USAGES")]
