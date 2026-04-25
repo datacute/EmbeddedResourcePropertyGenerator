@@ -114,7 +114,7 @@ The generated code includes a private nested class `EmbeddedResource` containing
 | Method or Class | Purpose |
 |-----------------|---------|
 | `Read(string resourceName)` | Method for reading embedded resources |
-| `BackingField` | Nested class caching the property values (omitted on C# 14+, which uses the `field` keyword instead) |
+| `BackingField` | Nested class caching the property values (generated on C# versions prior to C# 14, which lack the `field` keyword) |
 | `ResourceName` | Nested class holding the resource names |
 
 The implementation supports including two ***partial methods*** that can
@@ -125,14 +125,14 @@ and the code effectively reduces to:
 
 ```csharp
 public static string Example =>
-        EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+        field ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
 ```
 
-On C# 14 and later, the `field` keyword is used instead:
+On C# versions prior to C# 14, a `BackingField` nested class is generated and used instead:
 
 ```csharp
 public static string Example =>
-        field ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+        EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
 ```
 
 ### Partial methods:
@@ -157,11 +157,10 @@ public static string Example =>
             // This method is called before the default implementation.
 
             // The default implementation only reads the resource
-            // if the backingField is null, so by setting it in this method,
+            // if the backing field is null, so by setting it in this method,
             // the default implementation can be bypassed.
 
-            // The backingField is a reference to a static field
-            // for the property, and will be null for the first call,
+            // The backing field will be null for the first call,
             // but will retain the value for subsequent calls
             // for the same property.
 
@@ -201,15 +200,15 @@ public static string Example
 {
     get
     {
-        ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.Example, EmbeddedResource.ResourceName.Example, "Example");
-        var value = EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+        ReadEmbeddedResourceValue(ref field, EmbeddedResource.ResourceName.Example, "Example");
+        var value = field ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
         AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.Example, "Example");
         return value;
     }
 }
 ```
 
-On C# 14 and later, `EmbeddedResource.BackingField.Example` is replaced with the `field` keyword.
+On C# versions prior to C# 14, `field` is replaced with `EmbeddedResource.BackingField.Example`.
 
 ## Diagnostics
 The source generator traces its behaviour using code based on https://github.com/datacute/LightweightTracing
@@ -246,5 +245,5 @@ Thanks to Andrew Lock for his Series: [Creating a source generator](https://andr
   - Using a resx file is probably a better fit that adding this feature.
 - [ ] Support generating `ReadOnlySpan<byte>` properties instead of `string`
   - The decoding from utf-8 may not be needed.
-- [ ] Make use of the `field` keyword when C# 14 or above is used.
+- [x] Make use of the `field` keyword when C# 14 or above is used.
   - See https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-14#the-field-keyword
