@@ -247,7 +247,7 @@ public static class TestHelper
         }
     }
 
-    public static Task Verify<TGenerator>(string source, List<AdditionalText>? additionalTexts = null, LanguageVersion languageVersion = LanguageVersion.CSharp13)
+    public static Task Verify<TGenerator>(string source, List<AdditionalText>? additionalTexts = null, LanguageVersion languageVersion = LanguageVersion.CSharp14)
         where TGenerator : IIncrementalGenerator, new()
     {
         var driver = GetDriver<TGenerator>(additionalTexts, languageVersion);

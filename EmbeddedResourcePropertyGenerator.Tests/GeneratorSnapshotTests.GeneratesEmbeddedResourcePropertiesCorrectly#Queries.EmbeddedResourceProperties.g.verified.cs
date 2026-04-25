@@ -37,10 +37,6 @@ public static partial class Queries
             var resourceText = streamReader.ReadToEnd();
             return resourceText;
         }
-        public static class BackingField
-        {
-            public static string? Example;
-        }
         public static class ResourceName
         {
             public const string Example = "EmbeddedResourcePropertyGenerator.Tests.Queries.example.txt";
@@ -62,8 +58,8 @@ public static partial class Queries
     {
         get
         {
-            ReadEmbeddedResourceValue(ref EmbeddedResource.BackingField.Example, EmbeddedResource.ResourceName.Example, "Example");
-            var value = EmbeddedResource.BackingField.Example ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
+            ReadEmbeddedResourceValue(ref field, EmbeddedResource.ResourceName.Example, "Example");
+            var value = field ??= EmbeddedResource.Read(EmbeddedResource.ResourceName.Example);
             AlterEmbeddedResourceReturnValue(ref value, EmbeddedResource.ResourceName.Example, "Example");
             return value;
         }

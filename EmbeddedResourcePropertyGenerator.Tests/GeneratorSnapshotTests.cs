@@ -6,7 +6,7 @@ namespace EmbeddedResourcePropertyGenerator.Tests;
 
 public class GeneratorSnapshotTests
 {
-    private static Task Verify(string source, List<AdditionalText>? additionalTexts = null, LanguageVersion languageVersion = LanguageVersion.CSharp13)
+    private static Task Verify(string source, List<AdditionalText>? additionalTexts = null, LanguageVersion languageVersion = LanguageVersion.CSharp14)
     {
         return TestHelper.Verify<Generator>(source, additionalTexts, languageVersion);
     }
@@ -121,7 +121,7 @@ public class GeneratorSnapshotTests
     }
 
     [Fact]
-    public Task GeneratesEmbeddedResourcePropertiesCorrectly_CSharp14()
+    public Task GeneratesEmbeddedResourcePropertiesCorrectly_CSharp13()
     {
         var source = /* language=c# */
             """
@@ -144,7 +144,34 @@ public class GeneratorSnapshotTests
                 "Example text content in the wrong folder - should not be included")
         };
 
-        return Verify(source, additionalTexts, LanguageVersion.CSharp14);
+        return Verify(source, additionalTexts, LanguageVersion.CSharp13);
+    }
+
+    [Fact]
+    public Task GeneratesEmbeddedResourcePropertiesCorrectly_CSharp12()
+    {
+        var source = /* language=c# */
+            """
+            using Datacute.EmbeddedResourcePropertyGenerator;
+
+            [EmbeddedResourceProperties]
+            public static partial class Queries;
+            """;
+
+        var additionalTexts = new List<AdditionalText>
+        {
+            new InMemoryAdditionalText(
+                TestHelper.TestPath("Queries/example.txt"),
+                "Example text content"),
+            new InMemoryAdditionalText(
+                TestHelper.TestPath("Queries/example2.file"),
+                "Example text content with the wrong extension - should not be included"),
+            new InMemoryAdditionalText(
+                TestHelper.TestPath("WrongFolder/example3.txt"),
+                "Example text content in the wrong folder - should not be included")
+        };
+
+        return Verify(source, additionalTexts, LanguageVersion.CSharp12);
     }
 
     [Fact]
@@ -197,7 +224,7 @@ public class GeneratorSnapshotTests
                 "special characters in file names")
         };
 
-        // Pass the source code to our helper and snapshot test the output
-        return Verify(source, additionalTexts);
+        // Intentionally use pre-C#14 so generated BackingField names are snapshot-tested.
+        return Verify(source, additionalTexts, LanguageVersion.CSharp13);
     }
 }

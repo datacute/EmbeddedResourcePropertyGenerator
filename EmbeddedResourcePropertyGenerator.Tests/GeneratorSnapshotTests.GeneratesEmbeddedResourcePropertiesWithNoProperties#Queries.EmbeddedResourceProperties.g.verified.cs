@@ -37,9 +37,6 @@ public static partial class Queries
             var resourceText = streamReader.ReadToEnd();
             return resourceText;
         }
-        public static class BackingField
-        {
-        }
         public static class ResourceName
         {
         }
