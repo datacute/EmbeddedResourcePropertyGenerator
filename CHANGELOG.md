@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-05-02
+
+### Changed
+- Generated properties now use the C# `field` keyword on compilers that support it (C# 14+), eliminating explicit backing fields
+
+### Breaking Changes
+- On C# 14+ compilers, the `EmbeddedResource.BackingField` nested class is no longer generated. Code that directly accessed `EmbeddedResource.BackingField.PropertyName` will no longer compile. Implementations of the `ReadEmbeddedResourceValue` partial method are unaffected — the backing storage is passed to that method as a `ref` parameter regardless of whether it is backed by `field` or by the explicit `BackingField` class.
+
 ## [1.1.1] - 2025-08-03
 
 ### Added
@@ -83,7 +91,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support for overriding `ReadEmbeddedResourceValue` partial method
 
-[Unreleased]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/1.1.1...HEAD
+[Unreleased]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/compare/1.2.0...HEAD
+[1.2.0]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/1.2.0
 [1.1.1]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/1.1.1
 [1.1.0]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/1.1.0
 [1.0.0]: https://github.com/datacute/EmbeddedResourcePropertyGenerator/releases/tag/1.0.0

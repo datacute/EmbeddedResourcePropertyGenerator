@@ -16,18 +16,6 @@ public static class TestHelper
         Path.GetFullPath($"/EmbeddedResourcePropertyGenerator.Tests/Tests/{path}"
             .Replace('/', Path.DirectorySeparatorChar));
 
-    public static string[] GetTrackingNames<TTrackingNames>()
-    {
-        // get all the const string fields
-        var trackingNames = typeof(TTrackingNames)
-            .GetFields()
-            .Where(fi => fi.IsLiteral && !fi.IsInitOnly && fi.FieldType == typeof(string))
-            .Select(x => (string?)x.GetRawConstantValue()!)
-            .Where(x => !string.IsNullOrEmpty(x))
-            .ToArray();
-        return trackingNames;
-    }
-
     public static (GeneratorDriver, CSharpCompilation)
         NoModification(
             GeneratorDriver driver,
@@ -43,7 +31,7 @@ public static class TestHelper
             params string[] sources)
         where TGenerator : IIncrementalGenerator, new()
     {
-        var compilation = GetCompilation<TGenerator>(sources);
+        var compilation = GetCompilation<TGenerator>(LanguageVersion.CSharp13, sources);
 
         // Run the generator, get the results, and assert cacheability if applicable
         (GeneratorDriverRunResult runResult1, GeneratorDriverRunResult runResult2) =
@@ -52,7 +40,8 @@ public static class TestHelper
                 additionalTexts,
                 compilation,
                 trackingNamesToVerifyUnchanged,
-                modificationBetweenRuns);
+                modificationBetweenRuns,
+                LanguageVersion.CSharp13);
 
         // Return the generator diagnostics and generated sources
         return (runResult1.Diagnostics,
@@ -60,12 +49,13 @@ public static class TestHelper
             runResult2.GeneratedTrees.Select(x => x.ToString()).ToArray());
     }
 
-    private static CSharpCompilation GetCompilation<TGenerator>(params string[] sources)
+    private static CSharpCompilation GetCompilation<TGenerator>(LanguageVersion languageVersion, params string[] sources)
         where TGenerator : IIncrementalGenerator, new()
     {
+        var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(languageVersion);
         // Convert the source files to SyntaxTrees
-        var syntaxTrees = sources.Select(static (s, i) => 
-            CSharpSyntaxTree.ParseText(s).WithFilePath(TestPath($"Test{i}.cs"))
+        var syntaxTrees = sources.Select((s, i) =>
+            CSharpSyntaxTree.ParseText(s, parseOptions).WithFilePath(TestPath($"Test{i}.cs"))
         );
 
         // Configure the assembly references you need
@@ -87,12 +77,13 @@ public static class TestHelper
     private static (GeneratorDriverRunResult, GeneratorDriverRunResult) RunGeneratorAndAssertOutput<TGenerator>(
         Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)> scenarioModification,
         List<AdditionalText>? additionalTexts,
-        CSharpCompilation compilation, 
+        CSharpCompilation compilation,
         string[] trackingNamesToVerifyUnchanged,
-        Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)> modificationBetweenRuns)
+        Func<GeneratorDriver, CSharpCompilation, (GeneratorDriver, CSharpCompilation)> modificationBetweenRuns,
+        LanguageVersion languageVersion)
         where TGenerator : IIncrementalGenerator, new()
     {
-        var driver = GetDriver<TGenerator>(additionalTexts);
+        var driver = GetDriver<TGenerator>(additionalTexts, languageVersion);
 
         (driver, compilation) = scenarioModification(driver, compilation);
 
@@ -124,7 +115,7 @@ public static class TestHelper
         return (runResult, runResult2);
     }
 
-    private static GeneratorDriver GetDriver<TGenerator>(List<AdditionalText>? additionalTexts)
+    private static GeneratorDriver GetDriver<TGenerator>(List<AdditionalText>? additionalTexts, LanguageVersion languageVersion)
         where TGenerator : IIncrementalGenerator, new()
     {
         var generator = new TGenerator().AsSourceGenerator();
@@ -136,8 +127,9 @@ public static class TestHelper
             trackIncrementalGeneratorSteps: true);
 
         return CSharpGeneratorDriver.Create(
-            [generator], 
-            additionalTexts, 
+            [generator],
+            additionalTexts,
+            parseOptions: CSharpParseOptions.Default.WithLanguageVersion(languageVersion),
             optionsProvider: testConfigOptionsProvider,
             driverOptions: generatorDriverOptions);
     }
@@ -255,11 +247,11 @@ public static class TestHelper
         }
     }
 
-    public static Task Verify<TGenerator>(string source, List<AdditionalText>? additionalTexts = null)
+    public static Task Verify<TGenerator>(string source, List<AdditionalText>? additionalTexts = null, LanguageVersion languageVersion = LanguageVersion.CSharp14)
         where TGenerator : IIncrementalGenerator, new()
     {
-        var driver = GetDriver<TGenerator>(additionalTexts);
-        var compilation = GetCompilation<TGenerator>(source);
+        var driver = GetDriver<TGenerator>(additionalTexts, languageVersion);
+        var compilation = GetCompilation<TGenerator>(languageVersion, source);
         driver = driver.RunGenerators(compilation);
 
         return Verifier.Verify(driver)
